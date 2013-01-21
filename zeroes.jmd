@@ -1,0 +1,656 @@
+``` {r echo=FALSE, results="asis"}
+## process with knitr:::knit2html("filename.Rmd")
+## Nothing to see here ... move along
+require("questionr", quietly=TRUE)
+page <- questionr:::Page$new()
+nav <- questionr:::NavBar$new()
+cat(page$write_header())
+```
+`r I(nav$write_header("Solving for zeroes with julia", ""))`
+
+
+Solving for zero is a skill learned early on. In the case of lines, it can be done directly using algebra. In the case of factorable polynomials, we are taught to factor and then set each term to 0 to find the possible solutions. In general, the problem is to find one (or all) solutions to the equation
+
+$$
+f(x) = 0.
+$$
+
+A related problem is to find one (or all) solutions to an equation of this type:
+
+$$
+f(x) = g(x)
+$$
+
+Conceptually this is identical to the above, as we just set $h(x) = f(x) - g(x)$ and solve for when $h(x)$ is $0$.
+
+
+In general there may be no easy-to-find solution. Here we discuss a few different means to do so with `julia`, leaving others for a later time.
+
+Before proceeding, we load our packages for plotting:
+
+```j
+using Gadfly, Compose
+```
+
+
+`r I(nav$add("Zeroes of a polynomial"))`
+
+
+Polynomials are special functions, in that their relatively simple form allows for many explicit things to be known. E.g., for quadratic polynomials, one of these facts is the quadratic equation which explicitly gives a formula for the _roots_ of a quadratic polynomial. (A "root" of a polynomial is just a polynomial-specific name for a zero.) 
+
+
+For example, if we have the polynomial $2x^2 + 3x - 2$ we can solve for the roots with:
+
+```j
+a = 2; b = 3; c = -2
+discr = b^2 - 4*a*c
+
+( (-b + sqrt(discr))/(2a), (-b - sqrt(discr))/(2a) )
+```
+
+
+If you wanted to write a function to do this, it would be straightforward:
+
+```j
+function quadratic(a, b, c)
+  discr = b^2 - 4*a*c
+  discr >= 0 ?   ( (-b + sqrt(discr))/(2a), (-b - sqrt(discr))/(2a) ) : error("Only complex roots")
+end
+```
+
+
+And to find the roots of $x^2 + x - 1$ we have:
+
+```j
+quadratic(1, 1, -1)
+```
+
+There are further such formula for third and fourth degree polynomials. However, Galois at the tender age of 20 demonstrated that in general, there can be no formula for the roots of a fifth or higher degree polynomial. There are still facts known about such polynomials.  For example, the _Fundamental theorem of algebra_ states that every polynomial of degree $n$ will have $n$ roots, where we count complex roots and multiplicities.
+
+How to find them is left to numeric methods though. In `julia` there is an add-on package that will do this work for us. To use add on code in `julia` is relatively painless. In this case, the code comes with `julia` in the `extras` directory. Including it is as simple as:
+
+```j
+require("poly.jl")
+```
+
+The command to find the roots of the polynomial $f(x)$ is simply `roots`. That's easy. However, specifying the polynomial is done differently than just defining $f(x)$ as a function. 
+
+A general polynomial is specified through its coefficients.
+
+$$
+a_n x^n + a_{n-1} x^{n-1} + \cdots + a_1 x + a_0.
+$$
+
+
+Just like with our `quadratic` function, to represent a polynomial most efficiently, only the coefficients are needed. We place them into a vector with the leading coefficient first:
+
+```
+[an, a_n1, a_n2, ..., a1, a0]
+```
+
+Or to be specific, if $f(x) = -16x^2 + 32 x$ then this is 
+
+$$
+-16 x^2 + 32 x + 0
+$$
+
+So $a_2 = -16$, $a_1 = 32$ and importantly $a_0 = 0$, so we would use `[-16, 32, 0]`.
+
+The key point is that we must put $0$ for any missing terms and a $1$ when the term is a simple monomial like $x^2$.
+
+To create a polynomial object from this specification is done with the `Polynomial` constructor:
+
+```j
+p = Polynomial([-16, 32, 0])
+```
+
+And finding the roots is done with the _roots_ function:
+
+```j
+roots(p)
+```
+
+That's it. 
+
+
+`r I(page$new_problem("Using roots"))`
+
+Use the `roots` command to find the largest real root of the polynomial $x^2 + x + 1$
+
+
+```{r echo=FALSE, results="asis"}
+val <- tail(sort(Re(polyroot(c(-1, 1,1)))), n=1)
+tol <- 0.01
+cat(page$numeric_choice(val - tol, val + tol))
+```
+
+<hr />
+
+`r I(page$new_problem("Using roots"))`
+
+```{r echo=FALSE}
+n = floor(runif(1, 3, 20))
+```
+
+Use the `roots` command to find the largest real root of the polynomial $x^3 - x + `r n`$
+
+
+```{r echo=FALSE, results="asis"}
+val <- tail(sort(Re(polyroot(c(n, 1, 0, 1)))), n=1)
+tol <- 0.01
+cat(page$numeric_choice(val - tol, val + tol))
+```
+
+<hr />
+
+Before moving on, we note that the polynomial representation in terms of `p` does not mean we can't use this as a function for plotting, say. In fact, we could define `f` through:
+
+```j
+f(x) = polyval(p, x)
+```
+
+The `polyval` function does the hard work. It multiplies the coefficients of `p` against the proper powers of `x` and adds the results.
+
+For example, we can graph `f` with
+
+```j
+plot(f, -1, 3) | orender
+```
+
+
+
+However, there is no simple way to go from a factored form of a polynomial, e.g. $(x-1)(x-2)(x-4)$ to an expression like `p` though. (Well you could with some derivatives through $a_n = f^n(0)/n!$, but we resist here.)
+
+
+
+
+`r I(nav$add("Graphical solutions"))`
+
+More generally, the equation $f(x) = 0$ may not have any special form leading to a known solution. In this case, there are various techniques to find zeroes. Here we mention graphing, such as is done with a graphing calculator. In the next section, we discuss the bisection algorithm for root finding.
+
+
+<span class="label label-warning">Example: Finding a zero</span>
+
+
+The flight of an arrow can be modeled using various functions, depending on assumptions. Suppose an arrow is launched in the air from a height of 0 feet above the ground at an angle of $\theta = \pi/4$. With a suitable choice for the initial velocity, a model without wind resistance for the height of the arrow at a distance $x$ units away may be:
+
+$$
+h(x) = \tan(\theta) x- 16(\frac{x}{200 \cos\theta})^2.
+$$
+
+With a wind resistance given by $k$, again with some units, a similar equation can be constructed. It takes a different form:
+
+$$
+g(x) = \tan(\theta) x +
+     \frac{32/k}{200 \cos\theta} x -
+    \frac{32}{k} \log\left(\frac{200 \cos\theta}{200\cos\theta - x}\right).
+$$
+
+For each model, we wish to find the value of $x$ after launching where
+the height is modeled to be 0. That is how far will the arrow travel
+before touching the ground?
+
+
+For the model without wind resistance, we can graph the function
+easily enough. Let's guess the distance is no more than 500 feet:
+
+```j
+theta = pi/4
+h(x) = tan(theta) * x - 16(x/(200cos(theta)))^2
+plot(h, 0, 500) | orender
+```
+
+Well, we haven't even seen the peak yet. Better to do a little spade
+work first. This is a quadratic equation, so we can use our function
+`quadratic`. We just need to identify `a`, `b` and `c`.
+
+The value of `a` comes fy factoring out the $x^2$:
+
+```j
+a = - 16(1/(200cos(theta)))^2
+```
+
+The values for `b` and `c` should be clear:
+
+```j
+b = tan(theta); c = 0
+```
+
+Giving, 
+
+```j
+quadratic(a, b, c)
+```
+
+Rounding up, we see that 1250 is the value. So we plot over this domain to see:
+
+```j
+plot(h, 0, 1250) | orender
+```
+
+As for `g`, we first define the function. This same function appeared
+in a previous example. We copy that work here:
+
+```j
+function g(x)
+	 theta = pi/4
+	 k = 1/2
+	 a = 200*cos(theta)
+	 b = 32/k
+	 tan(theta)*x + (b/a)*x - b*log(a/(a-x))
+end
+```
+
+A quick plot over the same interval, $[0, 1250]$ yields:
+
+```j
+plot(g, 0, 1250) | orender
+```
+
+Oh, a bounds error. Of course, when $x > a$ the logarithm fails.  We
+try on the reduced interval avoiding the obvious _asymptote_ at `a` by
+subtracting $1$:
+
+```j
+a = 200*cos(theta)
+plot(g, 0, a - 1) | orender
+```
+
+
+Now we can see the zero is between 130 and 140. We re-plot:
+```j
+plot(g, 130, 140) | orender
+```
+
+Finally, we plot between 134 and 135 and draw the line for $y=0$ to
+see the zero clearly:
+
+```j
+plot([g, x -> 0], 134, 135) | orender
+```
+
+The answer is approximately $134.8$
+
+
+Finally, we plot both graphs at once to see that it was a very windy
+day indeed.
+
+```j
+plot([h, g] , 0, 1250) | orender
+```
+
+<hr />
+
+`r I(page$new_problem("repeat with different k"))`
+
+```{r echo=FALSE}
+k = .5 + floor(runif(1) * 10)/10
+```
+
+Repeat the above with a value of $k=`r k`$. How far does the arrow
+travel to one decimal point?
+
+```{r echo=FALSE, results="asis"}
+g <- function(x, k, a) {
+  theta = pi/4;
+  b = 32/k
+  tan(theta)*x + (b/a)*x - b*log(a/(a-x))
+}
+a = 200*cos(pi/4)
+h <- function(x) g(x, k, a)
+val <- uniroot(h, c(a/2,a))$root
+tol = 0.1
+cat(page$numeric_choice(val - tol, val + tol))
+```
+
+<hr />
+
+`r I(nav$add("Bisection algorithm"))`
+
+The bisection algorithm is a simple, iterative procedure for finding a
+root of a *continuous* function over the closed interval $[a,b]$
+provided $f(a)$ and $f(b)$ do not share the same sign. We say $a$ and
+$b$ _bracket_ a root. The fact there is at least one root (possibly
+more) is due to the _intermediate value theorem_.
+
+The basic idea is the midpoint of $[a,b]$, $M = (a + b)/2$, is tested
+for its function value. If it has opposite sign of $f(a)$, then the
+problem is reduced to one on $[a, M]$. Otherwise, the problem is
+reduced to $[M,b]$. (Assuming both $a$ and $b$ are not already
+zeroes.) At this point, the algorithm is repeated. As each step halves
+the interval length, it must eventually converge to an answer within
+some specified tolerance. A familiar name for this algorithm is the
+_divide and conqueror_ algorithm.
+
+To code this then requires a few tricks.
+
+First, we need some means to test if a function value is $0$, or
+really _close enough_ to $0$. As values are floating point, they may
+not be exactly $0$. As such, we use a tolerance that checks if a
+number is approximately $0$. Here is a function to do so and a
+specialization using a standard tolerance. We qualify both `x` and `y`
+to be real numbers, just in case you want to define some other
+behavior for this function:
+
+```j
+close_enough(x::Real, y::Real, tol::Real) = abs(x-y) < tol
+close_enough(x::Real, y::Real) = close_enough(x, y, sqrt(eps()))
+```
+
+Let's check to see it working:
+
+```j
+close_enough(1, 1.1, 0.01) ## difference is 0.1 > 0.01
+close_enough(1, 1.01, 0.1) ## difference is 0.01 < 0.1
+```
+
+
+With this, we can begin to sketch out our flow with a simple problem:
+find a zero of $f(x) = x^2 - 2$ between $0$ and $2$. Clearly, the
+answer is $\sqrt{2}$.
+
+
+```j
+a = 0; b=2
+f(x) = x^2 - 2
+mid = (a + b)/2
+close_enough(f(mid), 0, 0.01)
+```
+
+Well are "close enough?". Clearly not ($f(1) = -1$ and is no where
+near $0$). So we close in. We move `a` or `b` depending on the
+sign. If `f(mid)` is of different sign than `f(a)` then we set `b =
+mid`, otherwise we set `a = mid`. This is done quickly as follows
+using the _ternary operator_:
+
+```j
+f(a) * f(mid) < 0 ? (b = mid) : (a = mid)
+
+```
+
+The parentheses are needed here to postpone the assignment until after
+the ternary operator does its work.
+
+<hr />
+
+`r I(page$new_problem("Why can we check signs by multiplying"))`
+```{r echo=FALSE, results="asis"}
+choices <- c("The product of two numbers is never negative",
+	     "The product of 2 numbers with opposite signs is negative, the product of 2 numbers with the same signs is positive",
+	     "The product of two numbers will have the sign of the first one."
+	     )
+ans <- 2
+cat(page$radio_choice(sample(choices), choices[ans],  inline=FALSE))
+```
+
+
+<hr />
+
+
+
+
+Now we update the midpoint and check again
+
+```j
+mid = (a + b)/2
+close_enough(f(mid), 0, 0.01)
+```
+
+Still, not good enough, so we repeat the three key steps:
+
+```j
+f(a) * f(mid) < 0 ? (b = mid) : (a = mid)
+mid = (a + b)/2
+close_enough(f(mid), 0, 0.01)
+```
+
+Again, still not good enough. We find, that we will need to repeat the
+above three lines several times to get to an answer at the very
+undemanding tolerance of $0.01$.
+
+
+<hr />
+`r I(page$new_problem("How many times did it take?"))`
+
+How many times do you need to update the bracket before the midpoint
+is within the tolerance $0.01$?
+
+```{r echo=FALSE, results="asis"}
+val <- 8
+cat(page$numeric_choice(val - 1, val + 1))
+```
+
+<hr />
+
+
+The fact that the method is slow to converge would be a problem for
+us, were we not able to let the computer repeat the steps until it is
+done. As such, we need some way to repeat a process an arbitrary
+number of times. A `for` loop repeats a specific number of times. Not
+quite right. For this task, we want the `while` loop which will
+continue looping until some condition is met (our condition of
+`close_enough`).
+
+
+Our code is as follows. The basic algorithm is fairly straightforward
+to implement. Try and read over the code to see what is being done.
+
+There are a few new things:
+
+1) The function is longer than a one-liner. For such functions, the longer style
+
+```
+function function_name (arguments)
+   ... body ...
+end
+```
+
+is used. Recall, the last value computed is returned unless an
+explicit `return` call is made, as is done below.
+
+2) The arguments have special annotations (`::Function`,
+`::Real`). This notation is special to `julia` and is the key to the
+elegance of the language. Basically, this defines the function only
+for arguments that match these specifications. It is `julia`'s job to
+check the arguments specified to a function and to call the proper
+one, as many can have the same name. In computer science, such
+functions are known as _generic functions_ and the ability to dispatch
+to the correct definition is called _polymorphism_.
+
+
+Without more fuss, here is the function definition. 
+
+```j
+function bisection_method (f::Function, a::Real, b::Real)
+    
+    ## redefine to be self-contained
+    close_enough(x, y) = abs( x - y ) < sqrt(eps())
+    close_enough(x) = close_enough(x, 0)
+
+    ## check endpoints
+    if f(a) * f(b) > 0
+      error("Function values at endpoints must have different signs")
+    end	      
+
+    ## endpoints aren't already zeroes?
+    if close_enough(f(a))
+      return(a)
+    elseif close_enough(f(b))
+      return(b)
+    end
+
+    ## begin
+    update_mid(a, b) = (a + b)/2
+    mid = update_mid(a, b)
+    ctr = 1
+
+    while ( !close_enough(f(mid)) )
+        ## update a or b and then mid
+        f(a) * f(mid) < 0 ? (b = mid) : (a = mid)        
+        mid = update_mid(a, b)
+        ctr = ctr + 1
+    end
+
+    println("Converged to $mid in $ctr steps")
+
+    return(mid)
+end
+```
+
+The above can be copy-and-pasted into a `julia` session or loaded
+(along with the other long functions used in the projects) via
+
+```julia
+using TeachersHelpers; load_gist("4530920")
+```		    
+
+
+
+Okay, to see this in use. Let's look at the function $f(x) = -16x^2 +
+32x$. We know that 0 and $2$ are roots. Let's see if our algorithm
+finds them:
+
+```j
+f(x) = -16x^2 + 32x
+bisection_method(f, -1, 1) ## should find 0
+bisection_method(f, 1, 3)  ## should find 2
+```
+
+Okay, it seems to work. Lets try it on a less trivial problem. We know
+$\sin(x)$ and $\cos(x)$ cross in the interval $[0, \pi/2]$. If we are
+too tired to remember where, we can simply ask:
+
+```j
+f(x) = cos(x) - sin(x)
+out = bisection_method(f, 0, pi/2)
+```
+
+This, of course, looks betters as $\pi/4$:
+
+```j
+out - pi/4
+```
+
+
+
+<span class="label label-warning">Example: Graphical and numerical answers</span>
+
+One needs to know where to look in order to use the bisection
+method. The basic one-two punch is to a) graph the function to
+identify quickly values $[a,b]$ which bound a zero, then b) use the
+bisection method to find the zero to many decimal points.
+
+Here we illustrate with the problem of finding all intersection points
+of $e^x = x^4$ over the interval $[0,10]$. That is, for the function
+$f(x) = e^x - x^4$ find the zeroes.
+
+
+A quick plot shows, that the function has such a wide range, that
+looking over the entire domain at once will be problematic:
+
+```j
+f(x) = exp(x) - x^4
+plot(f, 0, 10) | orender
+```
+
+
+Instead, we look between $[0,3]$ and $[8,9]$. A quick confirmation
+shows these are good choices to use. For example, between $8$ and $9$
+we have:
+
+```j
+plot([f, x->0], 8, 9) | orender
+```
+
+So we find the values of the zero in the bracketed region $[8,9]$:
+
+```j
+bisection_method(f, 8, 9)
+```
+
+The root within $[0, 3]$ is found with:
+
+```j
+bisection_method(f, 0, 3)
+```
+
+
+`r I(page$new_problem("Are there other roots in [-10, 0]?"))`
+
+There is another root in the interval $[-10, 0]$ for the function
+$f(x) = e^x - x^4$. Find its value:
+
+```{r echo=FALSE, results="asis"}
+f <- function(x) exp(x) - x^2
+val <- uniroot(f, c(-10,0))$root
+cat(page$numeric_choice(val - .001, val + .001))
+```
+
+
+`r I(page$new_problem("Solve arrow problem with a/2 and a-1"))`
+
+Use the bisection method to find the root of 
+
+$$
+g(x) = \tan(\theta) x +
+     \frac{32/k}{200 \cos\theta} x -
+    \frac{32}{k} \log\left(\frac{200 \cos\theta}{200\cos\theta - x}\right).
+$$
+
+for $\theta = \pi/4$ and $k=1/2$. If $a = 200 \cos\theta$ use the
+values $a/2$ and $a-1$ to bracket the root.
+
+
+```{r echo=FALSE, results="asis"}
+g <- function(x) {
+  theta = pi/4; k = 1/2
+  a = 200*cos(theta)
+  b = 32/k
+  tan(theta)*x + (b/a)*x - b*log(a/(a-x))
+}
+a = 200*cos(pi/4)
+val <- uniroot(g, c(a/2,a))$root
+cat(page$numeric_choice(val - .001, val + .001))
+```
+
+
+`r I(page$new_problem("Ridder's method"))`
+
+
+One can speed the bisection method up by choosing the midpoint more
+carefully. The following function implements "Ridder's method" for
+picking the midpoint.
+
+```j
+function update_mid(a, b) 
+        c = (a + b)/2
+        discr = f(c)^2 - f(a)*f(b)
+        c + (c - a) * sign(f(a) - f(b)) * f(c) / sqrt(discr)
+end
+```
+
+Replace the `update_mid` function in the bisection method and give it
+a new name, say `ridder`.
+
+It takes 25 steps to do the bisection method for the function $f(x) =
+\sin(x) - \cos^2(x)$
+
+```j
+bisection_method( x -> sin(x) - cos(x)^2, 0, pi/2)
+```
+
+How many steps does it take with Ridder's method?
+
+
+```{r echo=FALSE, results="asis"}
+val <- 11
+cat(page$numeric_choice(val - 1, val + 1))
+```
+
+
+
+
+<!--- Finish this off -->
+`r I(nav$write_footer())`
+`r I(page$write_footer())`
+

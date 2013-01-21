@@ -1,0 +1,87 @@
+``` {r echo=FALSE, results="asis"}
+## process with knitr:::knit2html("filename.Rmd")
+## Nothing to see here ... move along
+require("questionr", quietly=TRUE)
+page <- questionr:::Page$new()
+nav <- questionr:::NavBar$new()
+cat(page$write_header())
+```
+`r I(nav$write_header("MTH229 with julia", sprintf("<em>Last updated %s</em>", date())))`
+
+
+
+I have become frustrated teaching MTH 229 with MATLAB. Not for the obvious reasons though. I like the idea that we do things numerically and not symbolically, as others would argue for. (And indeed, would have myself not so many years ago.) But I find that the students don't really learn enough MATLAB to be even modestly productive. Why? Many reasons, but here are a few:
+
+* they hate the dot
+* it takes 3 lessons just to make a graph
+* it is actually really tedious to make a function through an m file
+* the edit cycle is lousy as learned -- students hit the up arrow as much as any other key
+
+Well, these notes introduce `julia` to the task. `Julia` is a brand new (too new!) language for scientific computing. It is fast and elegant and has learned from many of the usability shortcomings of `Matlab`. Likely it will be a keeper the way R is a keeper. It is open source and runs on the three main platforms.
+
+`Julia` is not so different from `Matlab`, but it does make many things much easier in particular defining functions. As such we can treat functions as first class objects, as it is one of the first things students learn to do.
+
+
+I also don't like the projects as they don't embrace enough the numeric aspect of the class. I added some minor amount of material here. Maybe more could be added. I'm looking for feedback from people who actually do numerical stuff.
+
+
+
+`r I(nav$add("The plan"))`
+
+Here are links to **works in progress** with some quick notes. I'm looking for feedback, good, bad or indifferent.  The questions that are there are self-grading. I have a framework in progress that can record scores the way we have for `Matlab`, but we might even consider some other means of grading. (I have a student working on something along the lines of webwork that might prove useful.)
+
+
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/calculator.html
+
+Basics of types, order of operations and variables
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/functions.html
+
+Shows how to define and call a function
+
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/graphing.html
+
+The weakest part of `julia` so far is there is no dominant graphing package. This uses the `Gadfly` package for plotting which has a very simple `plot` interface for graphing functions. There are planned improvements.
+
+This has a discussion about packages.
+
+As well, a discussion about arrays and mapping a function over an array is given. This will be useful later on with limits, ...
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/zeroes.html
+
+Finding zeroes for polynomials, graphically and using the bisection method. This introduces tolerances.
+
+Also introduces the gist with some functions in it that save the student from copying and pasting or typing.
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/limits.html
+
+Basics of limits with a bit of discussion on floating point representation
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/derivatives.html
+
+Explore forward difference, central difference and more with a bit on error analysis. We define an operator ' which allows us to simply write f'(1) to get the numeric derivative of f at 1. We end with a brief discussion on automatic differentiation.
+
+
+<i class="icon-certificate"></i> first and second derivatives
+
+Not yet written
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/newton.html
+
+Basics of Newton's method with a copy-and-paste function to do the work after the student explores a bit.
+
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/extrema.html
+
+A project on minimization and maximization. Some standard applied problems plus a bit on golden section search.
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/integration.html
+
+Basics of integration including rectangle, trapezoid, simpson and brief adaptive quadrature.
+
+<!--- Finish this off -->
+`r I(nav$write_footer())`
+`r I(page$write_footer())`
+

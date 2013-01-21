@@ -1,0 +1,715 @@
+``` {r echo=FALSE, results="asis"}
+## process with knitr:::knit2html("filename.Rmd")
+## Nothing to see here ... move along
+require("questionr", quietly=TRUE)
+page <- questionr:::Page$new()
+nav <- questionr:::NavBar$new()
+cat(page$write_header())
+```
+`r I(nav$write_header("Numeric integration", "With in julia"))`
+
+
+The Fundamental Theorem of Calculus states in one form that one can
+compute a definite integral through knowledge of an antiderivative. In
+particular, if $F(x)$ is an antiderivative for $f(x)$ a continuous function, then
+
+$$
+\int_a^b f(x) dx = F(b) - F(a)
+$$
+
+But this theorem is usually prefaced with a definition of what the left hand side means when $f(x) \geq 0$ and $a \leq b$. This of course is the area under the curve $y=f(x)$ between $a$ and $b$. This area gives rise to a means to compute the definite integral independently of the fundamental theorem of calculus. That is, simply compute the area using increasingly better approximations.
+
+
+Before beginning, we pull in our helper functions.
+
+```j
+using TeachersHelpers; load_gist("4530920")
+```
+
+
+`r I(nav$add("Riemann sums"))`
+
+A Riemann sum is one of the simplest to understand approximations to the area under a curve. The basic idea is that the interval $[a,b]$ is partioned through points $a = x_0 < x_1 < \cdots x_n = b$ and the area under $f(x)$ between $x_i$ and $x_{i+1}$ is approximated by a rectangle with the base $x_{i+1} - x_i$ and height given by $f(x_i^*)$, where $x_i^*$ is some point in the interval $x_{i+1} - x_i$. Typical choices are the left point or the right point, or the $x$ value which minizes or maximizes $f$ over the interval. A function is called _Riemann integrable_ when the "limit" as the partion's mesh goes to $0$ of the upper and lower sums is the same. The figure shows these four choices for some sample function.
+
+```{r echo=FALSE}
+## insert figure here with the four rectangles
+f = function(x)  -((1/4)*x^4 -5*x^3 +(71/2)*x^2 - 105*x - 10)
+plot.new()
+plot.window(xlim=c(0,8), ylim=c(0, 125))
+x <- seq(0, 8, length=1000)
+lines(x, f(x), lwd=3)
+abline(h=0, lwd=3)
+x <- c(0,0,2,2)
+polygon(x, c(0, f(2), f(2), 0))
+text(1, 55, "right")
+polygon(2 + x, c(0, f(2), f(2), 0))
+text(3, 55, "left")
+polygon(4 + x, c(0, f(5), f(5), 0))
+text(5, 55, "min")
+polygon(6 + x, c(0, f(7), f(7), 0))
+text(7, 55, "max")
+text(0,0, expression(x[0]), pos=1)
+text(2,0, expression(x[1]), pos=1)
+text(4,0, expression(x[2]), pos=1)
+text(6,0, expression(x[3]), pos=1)
+text(8,0, expression(x[4]), pos=1)
+```
+
+As with other limits, we can numerically approximate the limit by computing the Riemann sum for some partition. The steps for this include:
+
+* creating a partition of $[a,b]$.
+* Selecting the $x_i^*$ within the partition
+* Computing the values $f(x_i^*)(x_{i+1} - x_i)$ for each $i$
+* adding these values up
+
+If we pick the left Riemann sum we can do this easily enough with the following sequence of commands. We pick $a=1$ and $b=3$ and integrate the function $x^2$. In the following we use an equal-sized partition giving  $n=10$ rectangles.
+
+```j
+f(x) = x^2
+a = 1; b = 3; n = 10
+delta = (b - a)/n
+x = linspace(float(a), b, n + 1) ## or a + (0:n)*delta 
+fxi = map(f, x[1:n])  ## right is 2:(n+1)
+sum(fxi * delta)
+```
+
+We compare this value to the known value from the FTC, as $F(x) = x^3/3$ is an antiderivative:
+
+```j
+F(x) = x^3/3
+F(b) - F(a)
+```
+
+Not too close. We need a better approximation of course, which means simply that we need `n` to be bigger.
+
+
+### Questions
+
+`r I(page$new_problem("Repeat with n=100"))`
+
+For the same problem, let $n=100$. What do you get?
+
+```{r echo=FALSE, results="asis"}
+f = function(x) x^2
+a=1; b=3; n=100
+x = seq(a, b, length=n+1)
+val = sum(f(x[1:n])) * (b-a)/n
+
+
+cat(page$numeric_choice(val - .0001, val + .0001))
+```
+
+n=100    
+
+`r I(page$new_problem("Repeat with n=1,000"))`
+
+For the same problem, let $n=1000$. What do you get?
+
+```{r echo=FALSE, results="asis"}
+f = function(x) x^2
+a=1; b=3; n=1000
+x = seq(a, b, length=n+1)
+val = sum(f(x[1:n])) * (b-a)/n
+
+cat(page$numeric_choice(val - .0001, val + .0001))
+```
+
+`r I(page$new_problem("Repeat with n=10,000"))`
+
+For the same problem, let $n=10,000$. is the difference between the
+answer and the actual answer within $0.001$?
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("Yes",
+	     "No"
+	     )
+ans <- 2
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+<hr />
+
+
+`r I(nav$add("Integrate function"))`
+
+Here we write a function to do the integration. This needs the basic inputs of 
+
+* a function,
+* the interval's start and end value, and 
+* the number of equal-sized subintervals.
+
+In addition, we allow for the possibility of passing in a function to compute the approximate area for a given subinterval. We give a default value where the left-hand endpoint is chosen.
+
+In this function, instead of working in a vectorized manner with
+`map`, we opt to use a `for` loop to accumulate the area, as that
+works well with how we pass in the two points in the partition
+specifying each sub-interval. This is part of the "gist" we loaded,
+but you can also just copy and paste this into your workspace so you
+have it available going forward.
+
+```j
+function integrate(f::Function, a::Real, b::Real, n::Integer, approx_area::Function)
+
+   x = linspace(float(a), b, n+1) ## n + 1 points for n subintervals
+
+   ## Use a for loop to add up the approximate areas for the x partition
+   tot = 0
+   for i in 1:n
+      tot = tot + approx_area(f, x[i], x[i+1])
+   end
+
+   return(tot)
+end
+```
+
+We will use the left endpoint for the default choice of point in each subinterval:
+
+```j
+function integrate(f::Function, a::Real, b::Real, n::Integer) 
+	 left_riemann(f::Function, a, b) = f(a)*(b-a)
+	 integrate(f, a, b, n, left_riemann)
+end
+```
+
+
+### integrate in action
+The basic usage of the `integrate` function is straightforward. Here we approximate the integral of $e^{-x^2}$ from $0$ to 3 using 10,000 subintervals:
+
+```j
+f(x) =  exp(-x^2)  	  	
+integrate(f, 0, 3, 10000)
+```
+
+How big should the number of intervals be? More intervals will give
+better answers, but unlike Newton's method we have no stopping
+criteria.  For this problem, we look at various values based on `n`:
+
+```j
+[integrate(f, 0, 3, n) for n in [100, 1000, 10000, 100000]]   ## or use 10.^(2:5)
+```
+
+We see a value around $0.886$ as the answer.
+
+
+### Continuity
+
+For some integrals, you may need to make a minor adjustment for lack
+of continuity.  The function $f(x) = \sin(x)/x$ over the interval $[0,
+\pi]$ has to be defined to be $1$ at $0$ to be continuous. We do so
+here:
+
+```j
+f(x) = x > 0 ? sin(x)/x : 1
+```
+
+Then `integrate` may be used as before, this time with 50,000 subintervals:
+
+```j
+integrate(f, 0, pi, 50000)
+```
+
+
+Had we simply specified `f(x) = sin(x)/x`, then `julia` would have returned `NaN` for `x=0` which have led to the entire integral being computed as `NaN`:
+
+```j
+f(x) = sin(x)/x; integrate(f, 0, pi, 50000)
+```
+
+
+### left versus right
+
+If we define `right_riemann` as
+
+```j
+right_riemann(f::Function, a, b) = f(b) * (b-a)
+```
+
+Then we can compare the right and left Riemann sums. Let's do so for the monotonic function $e^x$ over the interval $[0,2]$. 
+
+```j
+f(x) = exp(x)
+[integrate(f, 0, 2, n, right_riemann) - integrate(f, 0, 2, n) for n in 10.^(2:5)]
+```
+
+Since these are also the minimum and maximum Riemann sums, the above gives a bound on the error in the approximations. We can see it converges quite slowly, in that there are quite a few computations needed to get even a modest bound. ($100,000$ for $0.00013$).
+
+
+
+### questions
+
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+Repeat the above analysis comparing the right and left Riemann sums, but this time multiply by $n$, as follows:
+
+```
+f(x) = exp(x)
+[n * (integrate(f, 0, 2, n, right_riemann) - integrate(f, 0, 2, n)) for n in 10.^(2:5)]
+```
+
+This shows what?
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("That it is constant says the difference between right and left Riemann sums never goes to 0",
+	     "That it is constant says the difference between right and left Riemann sums goes to 0 like 1/n",
+	     "That it is constant says the difference between right and left Riemann sums is constant."
+	     )
+ans <- 2
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
+
+<hr/>
+
+
+`r I(nav$add("Applications"))`
+
+There are many more applications of the integral beyond computing areas under the curve. Here we discuss two: 
+
+* finding the volume of a figure with rotational symmetry (a glass in our example) and
+* finding the arc length of a line. 
+
+In each case one integrates a function related to the one describing the problem. If you keep this straight, the applications are no different than above.
+
+
+### Volume as a function of radius.
+
+For a symmetrical drinking vessel, like most every glass you drink from, the Volume can be computed from a formula if a function describing the radius is known. For a given glass, let $r(h)$ give the radius as a function of height. Then the volume of the vessel as a function of height is given by an  integral:
+
+$$
+V(b) = \int_0^b \pi (r(h))^2 dh
+$$
+
+We wish to look at our intuition relating the height of the fluid in the vessel compared to the percentage of fluid of the whole. A basic question might be: If the vessel is filled half way by height, is the volume half of the total, more or less. The answer, of course, depends on the shape of the glass. That is the shape of the function $r(h)$. Note, if $r(h)$ is a constant -- the glass is a cylinder -- then the half-height mark is also the half-volume mark. Not so in general.
+
+In _Glass Shape Influences Consumption Rate for Alcoholic Beverages_ (http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0043007) the authors demonstrate that the shape of the glass can have an effect on the rate of consumption, presumably people drink faster when they aren't sure how much they have left. In particular, they comment that people have difficulty judging the half finished by volume mark.
+
+We work with metric units, as there is a natural relation between volume in cm$^3$ and liquid measure (1 liter = 1000 cm$^3$, so a 16-oz pint glass is roughly $450$ cm$^3$.)
+
+Let two glasses be given as follows. A typical pint glass with linearly increasing radius:
+
+$$
+r(h) = 3 + \frac{1}{5}h, \quad 0 \leq h \leq b;
+$$
+
+and a curved edge one:
+
+$$
+s(h) = 3 + \log(1 + h), \quad 0 \leq h \leq b
+$$
+
+
+
+```{r echo=FALSE}
+r = function(h)  3 + h/5
+s = function(h)  2 + log(1+h)
+rb = 9.169
+sb = 10.3717
+
+xr <- seq(0, rb, length=100)
+xs <- seq(0, sb, length=100)
+
+plot.new()
+plot.window(xlim=c(-5, 18), ylim=c(0, 10.6))
+
+lines(c(-3, 3), c(0,0), lwd=2)
+lines( r(xr), xr, lwd=2)
+lines(-r(xr), xr, lwd=2)
+
+a = r(rb)
+xa <- seq(a, -a, length=100)
+lines(xa, rb - .3*sqrt(1 - (xa/a)^2), lwd=2)
+lines(xa, rb + .3*sqrt(1 - (xa/a)^2), lwd=2)
+
+
+lines(12 + c(-2, 2), c(0,0), lwd=2)
+lines(12 + s(xs), xs, lwd=2)
+lines(12 - s(xs), xs, lwd=2)
+
+
+a = s(sb)
+xa <- seq(a, -a, length=100)
+lines(12 + xa, sb - .3*sqrt(1 - (xa/a)^2), lwd=2)
+lines(12 + xa, sb + .3*sqrt(1 - (xa/a)^2), lwd=2)
+
+
+abline(h=0, col="gray")
+```
+
+
+
+One could also consider a fluted one, such as appears in the comparison noted in the article. 
+
+
+`r I(page$new_problem("Fluted glasses"))`
+
+Which of these functions might describe a fluted glass where the radius changes faster as the height gets bigger, that is the radius is a _concave up_ function?
+
+```{r echo=FALSE, results="asis"}
+choices <- c("`r(h) = 2 + (x/10)^2, 0 <= x <= 10`",
+	     "`r(h) = 2 + sqrt(x/10), 0 <= x <= 10`",
+	     "`r(h) = 2 + x/10, 0 <= x <= 10`"
+	     )
+ans <- 1
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+<hr />
+
+
+For the two types of glasses in the figure, we create functions in `julia` as follows:
+
+```j
+r(h) = 3 + h/5
+s(h) = 2 + log(1 + h)
+r_vol(b) = integrate(x -> pi*r(x)^2, 0, b, 10000)
+s_vol(b) = integrate(x -> pi*s(x)^2, 0, b, 10000)
+```
+
+Then we can easily find the volume as a function of height. For example at 10cm we have:
+
+```j
+(r_vol(10), s_vol(10))
+```
+
+
+However, to find $b$ that makes the glass $450$ cm$^3$ requires us to solve an equation involving an integral for $b$:
+
+$$
+V(b) = \int_0^b \pi r(h)^2 dh = 450.
+$$
+
+
+Not to worry, we can use Newton's method for that. Rather than compute derivatives by hand -- a nice application of the Fundamental Theorem of Calculus -- we will use numeric derivatives.
+
+
+
+Then Newton's method to solve for when `V(b) = r_vol(b) = 450` becomes:
+
+```j
+x = 10
+x = x - (r_vol(x) - 450)/r_vol')(x)
+```
+
+etc, or more quickly using `nm`:
+
+```j
+r_b, ctr = nm(x -> r_vol(x) - 450, r_vol', 10)
+```
+
+
+So $b$ is basically 9.1692.  Given this, how much volume is left at `b/2`?
+
+```j
+r_vol(r_b/2)
+```
+
+That is about `j r_vol(r_b/2) / r_vol(r_b) *100` percent ($\approx
+173.27/450 \cdot 100$). As this height is often mistaken for the
+half-way by volume mark, people tend to drink these pints faster than
+they think.
+
+Now compare to the height to get half the volume (225 ml):
+
+```j
+nm(x -> r_vol(x) - 225, r_vol', 5)
+```
+
+Or about $5.6038$. That is, when you are at `j x/r_b*100` percent
+$\approx 5.6038/9.169 \cdot 100$ of the height you have only half the
+volume remaining (and not at 50% of the height.)
+
+
+
+<hr />
+### Questions
+
+Compare the above for the curved glass, where $s(h) = 3 + \log(1 + h)$.
+
+
+`r I(page$new_problem("Find height of the glass"))`
+
+What is the height of the glass, `b`, needed to make the volume 450?
+
+
+```{r echo=FALSE, results="asis"}
+val <- 10.3717483
+cat(page$numeric_choice(val - .001, val + .001))
+```
+
+
+
+`r I(page$new_problem("Find volume with the glass half full (by height)"))`
+
+Find the volume of the glass when the glass is  filled to half its height. Report the value as a percentage.
+
+
+```{r echo=FALSE, results="asis"}
+b <- 10.3717483
+b2 <- 167.93332911961625
+val <- b2/450*100
+cat(page$numeric_choice(val - 1, val + 1))
+```
+
+
+
+
+`r I(page$new_problem("Find height to get half the volume"))`
+
+Now, what height of filling will produce half the volume (225ml)? Report your answer in terms of a percentage of the height of the glass.
+
+
+```{r echo=FALSE, results="asis"}
+b <- 10.3717483
+b3 <- 6.372357981708
+val <- b3/b*100
+cat(page$numeric_choice(val - .1, val + .1))
+```
+
+<hr/>
+
+
+### Example, arc length
+
+The _arc length_ of the curve $y=f(x)$ between $a \leq x \leq b$ (or how long is the curve) is given through the formula
+
+$$
+l = \int_a^b \sqrt{1 + f'(x)^2} dx
+$$
+
+The formula is from the length of the hypotenuse of a right triangle with lengths $1$ and $f'(x)$, though why is left for another day.
+
+
+The arc length is easily computed using numeric integration. For example, consider the function $y=x^2$ from $0$ to $1$. The graph
+
+```j
+plot(x -> x^2, 0, 1) | render
+```
+
+shows the value of $l$ sits in $1.414... = \sqrt{1^2 + 1^2}  \leq l \leq 1 + 1 = 2$. (Why?) But what is it? Easy enough to approximate. We use $n=10000$:
+
+```j
+f(x) = x^2
+integrate(x -> sqrt(1 + f'(x)^2), 0, 1, 10000)
+```
+
+
+### Example: the caternary shape
+
+A _caternary_ shape (http://en.wikipedia.org/wiki/Catenary) is the shape a hanging chain will take as it is suspended between two posts. Of course, power wires will also have this shape between towers. A formula for a caternary can be written in terms of the hyperbolic cosine, `cosh` in `julia`:
+
+$$
+y = a \cosh(x/a) = a \cdot \frac{e^{x/a} + e^{-x/a}}{2}.
+$$
+
+Suppose we have the following wire hung between $x=-1$ and $x=1$ with $a = 2$:
+
+```j
+a = 2
+f(x) = a*cosh(x/a)
+plot(f, -1, 1) | render
+```
+
+How long is the chain? Looking at the graph we can guess an answer is between $2$ and $2.5$, say but it isn't much work to get much closer to the answer:
+
+```j
+integrate(x -> sqrt(1 + f'(x)^2), -1, 1, 10000)
+```
+
+
+### questions
+
+`r I(page$new_problem("The parameter a"))`
+
+```{r echo=FALSE}
+a = round(runif(1, .5, 10) * 10)/10
+```
+
+The sag in the chain is adjusted through the parameter $a$ -- chains with larger $a$ have less sag. 
+
+Suppose your chain has parameter `r a` what is the length? (Use $n=10,000$)
+
+
+```{r echo=FALSE, results="asis"}
+f <- function(x) a*cosh(x/a)
+g <- function(x) sqrt(1 + sinh(x/a)^2)
+x0 = -1; xn = 1; n = 10000
+x <- seq(x0, xn, length=n+1)
+val <- sum(g(x[1:n])) * (xn-x0)/n
+cat(page$numeric_choice(val - .001, val + .001))
+```
+
+
+
+`r I(page$new_problem("Bridges are parabolas"))`
+
+Suspension bridges, like the Verrazano bridge have different loading than a cable and hence a different shape. A parabola is the shape the cable takes.
+
+The Verrazano-Narrows bridge has a span of 1298m. Suppose the drop of the main cables is 147 meters over this span. Then the cable itself can be modeled as a parabola with
+
+* $x$-intercepts $a = 1298/2$ and $-a$ and 
+* vertex $(0,b)$ with $b=-147$.
+
+The parabola that fits these three points is 
+
+$$
+y = \frac{-b}{a^2}(x^2 - a^2)
+$$
+
+Find the arc length of the cable in meters.
+
+
+
+```{r echo=FALSE, results="asis"}
+## a = 1298/2
+## b = -147
+## f(x) = (-b/a^2)*(x^2 - a^2)
+## integrate( x -> sqrt(1 + f'(x)^2), -a, a, 10000)
+val <- 1341.1191
+cat(page$numeric_choice(val - .1, val + .1))
+```
+	
+<hr/>
+
+
+`r I(nav$add("Trapezoid and Simpson's rule"))`
+
+The basic left or right Riemann sum will converge, but the convergence is really slow. Not that it matters when doing just one of these, but it can if we are doing many, such as is the case in real life. There are many speed ups, we mention a few basic ones next.
+
+
+The trapezoid rule simply replaces the approximation of the area in a subinterval by a trapezoid, as opposed to a rectangle. Easy enough, we can write our approximation function with:
+
+```j
+trapezoid(f::Function, a::Real, b::Real) = (1/2)*(f(a) + f(b))*(b-a)
+```
+
+We can use this as follows. Let's approximate the area under $5x^4$ curve between $0$ and $1$ (with known answer $1$):
+
+```j
+f(x) = 5x^4
+integrate(f, 0, 1, 1000, trapezoid)
+```
+
+Pretty close to 1 with just 1,000 subintervals.
+
+We now compare the error with the left Riemann sum for the same size $n$:
+
+```j
+n_values = 10.^(2:5)     	    
+left_r = [1 - integrate(f, 0, 1, n) for n in n_values]
+trapezoid_r = [1 - integrate(f, 0, 1, n, trapezoid) for n in n_values]
+[n_values float(left_r)  float(trapezoid_r)]
+```
+
+One can see that the errors are much smaller for the trapezoid method.
+
+### Simpson's rule
+
+The trapezoid rule can be viewed as a simple linear approximation to the function $f(x)$ over the subinterval $[a, b]$. That is, replace the function with the secant line between these two values and integrate the replacement. With this viewpoint, it is possible that other easy-to-integrate function approximations will lead to improved approximate integrals. Simpson's method can be viewed in just this way. It replaces $f$ by the parabola going through $(a, f(a))$, $(c, f( c))$ and $(b, f(b))$ where $c=(a+b)/2$ is the midpoint between $a$ and $b$. The resulting area after this approximation is:
+
+```j
+simpsons(f::Function, a::Real, b::Real) = (f(a) + 4f((a+b)/2) + f(b))*(b-a)/6
+```
+
+We compare how accurate we get with this rule for the same `f` as before:
+
+```j
+simpsons_r = [1 - integrate(f, 0, 1, n, simpsons) for n in n_values]
+[n_values float(left_r)  float(trapezoid_r) float(simpsons_r)]
+```
+
+As can be seen, for this  function approximating with a parabola is much quicker to converge. That is, $n$ can be smaller yet the same accuracy is maintained. (Of course, there are more computations involved for each, so the number of operations needed may or may not be fewer, that would require some analysis.)
+
+### error
+One can show that the error is bounded by
+
+$$
+\frac{1}{90}\frac{1}{2^5} M (b-a)^5 \frac{1}{n^4},
+$$
+
+where $M$ is a bound on the fourth derivative. As we increase $n$, the error gets small at a quick rate.
+By contrast, the error for the trapezoid method will be like $n^{-2}$ and the left Riemann sum like $n^{-1}$.
+
+### questions
+
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+`r I(page$new_problem("question..."))`
+
+<hr/>
+
+
+`r I(nav$add("Adaptive integration"))`
+
+
+We end with a brief discussion about an alternative means to compute integrals. The following function `apapt` implements a basic _adaptive quadrature_ method for integration. The basic idea is that for a subinterval $[a,b]$ if the area of the trapezoid is not close to the area of Simpson's parabolic estimate then the subinterval is split into two pieces $[a,c]$ and $[c,b]$ and the same question is asked. If the area is close the Simposon's parabolic estimate is used to estimate the integral of $f$ over that subinterval.
+
+The programming this algorithm shows off _recursion_. This is a term
+used when a function calls itself to compute an answer. To avoid
+infinite loops during this, we use a limit below to keep track.
+
+In general, the value of adaptive methods like this, is the function
+calls concentrate on areas where $f$ is not well approximated and
+where it is well approximated it just moves on. This approach works
+well for poorly behaved functions, as it has a more refined grid
+there.
+
+
+```j
+## from the `area` function in the MASS package of R
+function adapt(f::Function, a::Real, b::Real, limit::Integer)
+    close_enough(x, y) = abs(x - y) < sqrt(eps())
+
+    println("adapt called with a=$a, b=$b, limit=$limit")
+
+    h = b-a
+    c = (a + b)/2
+    
+    a1 = (f(a) + f(b)) * h/2          ## trapezoid
+    a2 = (f(a) + 4f(c) + f(b)) * h/6  ## Simpson's parabola
+
+    if close_enough(a1, a2) 
+        return(a2)
+    end
+
+    if limit == 0
+        println("limit reached for this interval [$a, $b]")	
+	return(a2)
+    end
+
+    adapt(f, a, c, limit - 1) + adapt(f, c, b, limit-1)
+end
+```    
+
+
+Does it work? Let's see it for the area of $f(x) = x^2(1-x)^{10}$
+which is known to satisfy $\beta(2+1, 10+1)$
+
+```j
+adapt(x -> x^2*(1 -x)^10, 0, 1, 10)
+```
+
+Not too bad if we compare to
+
+```j
+beta(2 + 1, 10 + 1)
+```
+
+
+<!--- Finish this off -->
+`r I(nav$write_footer())`
+`r I(page$write_footer())`
+

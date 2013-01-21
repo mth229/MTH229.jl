@@ -1,0 +1,664 @@
+``` {r echo=FALSE, results="asis"}
+## process with knitr:::knit2html("filename.Rmd")
+## Nothing to see here ... move along
+require("questionr", quietly=TRUE)
+page <- questionr:::Page$new()
+nav <- questionr:::NavBar$new()
+cat(page$write_header())
+```
+`r I(nav$write_header("Functions in julia", ""))`
+
+We see in this project how to easily create functions in
+`julia`. Mathematically, a function can be viewed in many different
+ways. An abstract means is to think of a function as a mapping,
+assigning to each $x$ value in the function's domain, a corresponding
+$y$ value in the function's range. With computer languages, such as
+`julia`, the same holds, though there may be more than one argument to
+the function and with `julia` the type of argument and the number of
+arguments is consulted to see exactly which function is to be called.
+
+Here we don't work abstractly though. For a mathematical function, we
+typically just have some rule for what the function will do to $x$ to
+produce $y$, such as
+
+$$
+f(x) = \sin(x) - \cos(x).
+$$
+
+In `julia` there are two different ways to define a function, we start with
+the most natural one which makes it very simple to work with
+functions of this type.
+
+
+
+`r I(nav$add("Polynomials"))`
+
+One of the most basic families of functions are the polynomial
+functions, which include as special cases the very familiar constant
+functions, linear functions and quadratic functions.
+
+Let's look at the familiar _linear_ function to convert Fahrenheit into Celsius:
+
+$$
+f(x) = 5/9 \cdot (x - 32).
+$$
+
+That is we subtract $32$ then multiply by $5/9$
+
+We can easily turn this into a function, simply by replacing the mathematical notation $\cdot$ with `*`:
+
+```j
+f(x) = (5/9) * (x - 32)
+```
+
+This defines a function object `f`. To evaluate `f` for a given value
+of $x$ we simply use the familiar mathematical notation. Here we see
+what Celsius is for "normal" body
+temperature:
+
+```j
+f(98.6)
+```
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Calling a function</span>
+
+Evaluating a function for a given value is also known as "calling"
+`f`. When we work with functions in `julia`, the distinction between
+the function object and calling the function is important to keep
+straight -- though not too hard to do. In mathematical notation, it is
+sort of like the difference between writing $f$, as opposed to $f(x)$
+to describe the function, the latter implying there is some $x$ to be
+evaluated.
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Numeric literals</span>
+
+`Julia` provides the familiar notation above for simple functions. In
+fact, for polynomials with integer coefficients, one can even skip the `*`:
+
+```j
+g(x) = 2x^2 - 3x + 2
+g(2)
+```
+
+The convention is that when variables are immediately preceded by a
+numeric literal (and by immediately it is meant no spaces are in
+between) `julia` will assume multiplication is intended. (This can
+bypass the usual order of operations, e.g. try `5/9(x-32)`.)
+
+This can also used when simple parentheses are involved:
+
+```j
+h(x) = 2(x - 1)^2 + 3(x+1)
+```
+
+But won't work with expressions such as `(x+1)(x-1)`, as `julia` will
+then think the first parenthetical pair is a function and try to call
+it with a value of `x-1`.
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Equations versus functions</span>
+
+Mathematically we tend to blur the distinction between the equation
+
+$$
+y = 5/9 \cdot (x - 32)
+$$
+
+and the function
+
+$$
+f(x) = 5/9 \cdot (x - 32)
+$$
+
+As the graph of the function $f(x)$ is the same as the graph of the
+equation $y=f(x)$. There is a distinction in `julia` as
+
+```j
+x = -40
+y = 5/9 * (x - 32)
+```
+
+will evaluate the righthand side with the value of `x` bound at the
+time of assignment to `y`, whereas
+
+```j
+f(x) = 5/9 * (x - 32)
+f(212)				## boiling water
+```
+will create a function which is called with a value of `x` at a later time. So the value of `x` defined when the function is created is not important here (as `x` is passed in as an argument).
+</note>
+
+
+
+
+Of course `julia` has all the usual built-in functions found on a
+scientific calculator. See section 1.4.3 in `julia`'s manual (Mathematical Functions) and http://docs.julialang.org/en/latest/stdlib/base/#mathematical-functions of the official
+`julia` documentation for lists. Here we show how to translate some basic
+math functions into `julia` functions:
+
+* polynomials:
+
+$$
+f(x) = x^2 - x + 1
+$$
+
+becomes
+
+```j
+f(x) = x^2 - x + 1
+```
+
+One only needs to adjust for the power notation from mathematics.
+
+* rational functions
+
+$$
+f(x) = \frac{x^2 - 2}{x - 2}
+$$
+
+becomes
+
+```j
+f(x) = (x^2 - 2)/(x-2)
+```
+
+Here, as with your calculator, it is important to remember to use
+parentheses around the top and bottom expressions, as otherwise the
+division operator will have higher precedence.
+
+* square roots and powers
+
+$$
+f(x) = \sqrt{x} + x^{1/3}
+$$
+
+becomes:
+
+```j
+f(x) = sqrt(x) + x^(1/3)
+```
+
+The square root symbol is replaced by the built-in `sqrt`
+function. Whereas, for the fractional power, this shows the required
+parentheses around `(1/3)` to ensure that division occurs before the
+higher-precedence power operation. (One also has a `cbrt` function.)
+
+
+
+### Questions
+`r I(page$new_problem(" polys ..."))`
+`r I(page$new_problem(""))`
+`r I(page$new_problem(""))`
+
+<hr/>
+
+
+`r I(nav$add("Trig and exponential functions"))`
+
+
+
+* trigonometric functions
+
+$$
+f(x) = \cos(x) - \sin^2(x)
+$$
+
+becomes 
+
+```j
+f(x) = cos(x) - sin(x)^2
+```
+
+The mathematical notation $\sin^2(x)$ is really just a shorthand for
+the more cumbersome $(\sin(x))^2$, which is what `julia` must do, as
+notation such as `sin^2(x)` to `julia` is not what is wanted here. (In
+general $f^k$ will do function composition, not powers. If you don't
+like it see
+http://www.quotesvalley.com/images/06/sin-is-odious-to-me.jpg and
+blame Gauss himself.)
+
+
+If you want to work in degrees you can do so with the degree-based trigonometric functions:
+
+```j
+fd(x) = cosd(x) - sind(x)^2
+```
+
+
+* inverse trigonometric functions
+
+$$
+f(x) = 2\tan^{-1}(\frac{\sqrt{1 - x^2}}{1 + x})
+$$
+
+
+```j
+f(x) = 2atan( sqrt(1-x^2) / (1 + x) )
+```
+
+This is just an alternative expression for $\cos^{-1}$ using the arctan function, as seen here:
+
+```j
+f(.5) - acos(.5) ## nearly 0
+```
+
+
+  The exponent in the inverse
+trigonometric functions is _just_ mathematical notation for the longer
+expression "arctan" or "arccos". (It definitely is not a reciprocal.)
+The `julia` functions -- like most all computer languages --
+abbreviate these names to `atan`, `acos` or `asin`.
+
+
+
+
+* Exponential function
+
+The math function
+
+$$
+f(x) = e^{-\frac{1}{2}x^2}
+$$
+
+Can be expressed as
+
+```j
+f(x) = e^(-(1/2)*x^2)
+```
+
+The value of $e$ is built-in to `julia`, but can be inadvertenly redefined. As
+such, it would be safer practice to use the `exp` function, as in:
+
+```j
+f(x) = exp(-(1/2)*x^2)
+```
+
+There isn't much difference in use, but don't try to do `exp^(-(1/2)*x^2)`!
+
+
+* Logarithms
+
+The mathematical notations for logarithms often include $\ln$ and
+$\log$ for natural log and log base 10. With computers, there is
+typically just `log` for natural log, or with an extra argument the logarithm to other bases.
+
+$$
+f(x) = \ln(1 - x)
+$$
+
+becomes just
+```j
+f(x) = log(1 - x)
+```
+
+Where as, the base 10 log:
+
+$$
+f(x) = \log_{10}(1 + x)
+$$
+
+can be done through:
+
+```j
+f(x) = log(10, 1 + x)
+```
+
+where the *first* argument expresses the base. (Of course
+`log(1+x)/log(10)` works too!) For convenience, `julia` also gives the
+functions `log10` and `log2` for base 10 and 2 respectively.
+
+If you don't like this, `julia` has the special functions `log10` and `log2` for you to use.
+
+
+### Questions
+`r I(page$new_problem("..."))`
+`r I(page$new_problem("..."))`
+`r I(page$new_problem("..."))`
+
+<hr/>
+
+
+`r I(nav$add("More complicated functions"))`
+
+
+If you want to define a more complicated function, say one with a few
+steps to compute, the alternate form for a function can be
+used. Basically it has the form
+
+```
+function function_name(function_arguments)
+  ...function_body...
+end
+```
+
+The last value computed is returned unless the `function_body` contains a `return` call.
+
+The following is a more verbose way to define $f(x) = x^2$:
+
+```j
+function f(x)
+  return(x^2)
+end
+```
+
+The line `return(x^2)`, could have just been `x^2` as it is the last (and) only line evaluated.
+
+
+<span class="label label-warning">Example: many parts</span>
+
+Imagine we have a complicated function, such as:
+
+$$
+ g(x) = \tan(\theta) x + \frac{32/k}{200 \cos\theta} x -
+    \frac{32}{k} \log\left(\frac{200 \cos\theta}{200\cos\theta - x}\right).
+$$
+
+where $k$ is the constant 1/2 and $\theta=\pi/4$. To avoid errors in
+transcribing, it can be be useful to break such definitions up into
+steps. Here we note the repeated use of $200\cos(\theta)$ and $32/k$ in the defintion of $g(x)$,
+so we give them the intermediate names of `a` and `b`:
+
+```j
+function g(x)
+	 theta = pi/4
+	 k = 1/2
+	 a = 200*cos(theta)
+	 b = 32/k
+	 tan(theta)*x + (b/a)*x - b*log(a/(a-x))
+end
+```
+
+From this, we can easily see that we would need to be concerned as $x$ approaches the value of `a`, as when $x \geq a$ the logarithm won't be defined.
+
+
+<span class="label label-warning">Example: Hockey stick functions</span>
+
+Here is a different example, where we define a "hockey stick"
+function, a name for functions that are flat then increase linearly after some threshold.
+
+A cell phone plane might cost one \$30 for the first 500 minutes of
+calling and 25 cents per minute thereafter. Represent this as a
+function of the number of minutes used.
+
+Here we need to do one of two things depending if $x$ is greater or
+less than $500$. There are different ways to do this, but we will use
+and `if-else-end` statement, which has the following form:
+
+```j
+function cell_phone(x)
+	 if x < 500
+	   return(30.0)
+	 else
+	   return(30.0 + 0.25*(x-500))
+	 end
+end
+```
+
+To see what it would cost to talk for 720 minutes in a month, we have:
+
+```j
+cell_phone(720)
+```
+
+<i class="icon-eye-open"></i> <span class="label label-important">Subtlety</span> 
+
+We return `30.0` above -- and not the integer `30` -- so that the
+function always returns a floating point value and not an integer if
+less than 0 and a floating point value if bigger. This can be
+important when using the function later on. In general it is a good
+programming practice to have functions return only one type of variable.
+
+
+To see why we call the above function a "hockey stick" function we
+make a quick plot (the mechanics of which, we will discuss in a later
+project):
+
+```j
+p = plot(cell_phone, 0, 1000) | orender ## go Rangers
+```
+
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Simple alternative to `if-else-end`</span>
+
+One can use the so-called _ternary operator_ `a ? b : c` for simple
+`if-else-end` statements as above. So this example could have been a
+one-liner:
+
+```j
+cell_phone(x) = x < 500 ? 30.0 : 30.0 + 0.25*(x - 500)
+```
+
+### Questions
+`r I(page$new_problem("..."))`
+`r I(page$new_problem(""))`
+`r I(page$new_problem(""))`
+
+<hr/>
+
+
+`r I(nav$add("Function algebra"))`
+
+Functions can be added or subtracted, multiplied or divided, and
+unlike numbers there is the additional concept of composition. These
+operations allow us to think of more complicated functions as
+comprised of simpler functions glued together through these various
+operations.
+
+One can easily use the standard notations within a function
+defintion. For example:
+
+```j
+h(x) = x^2
+g(x) = log(1 + x)
+f(x) = h(x) - g(x)
+f(x) = h(x) * g(x)
+f(x) = g(h(x))
+```
+
+For example, does the order of composition matter? Well, let's see that it does:
+
+```j
+g(h(2)) - h(g(2))
+```
+
+That this is not $0$ indicates that composistion is not _commutative_.
+
+The above works with the functions after they have been called (after
+putting in $x$). There are times where we want to work with just the
+function objects themselves as functions. The basic operators `-`,
+`+`, `*`, and `/` are not defined for this. However, there is a
+composition operator. It is the `*` operator overloaded to do
+something for functions:
+
+```j
+f(x) = (h * g ) (x)
+f(2) - h(g(2))
+```
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Commutivity</span>
+
+Even though we know composition is not commutative (i.e. $f(g(x)) \neq
+g(f(x))$ in general), `julia` uses `*` for composition. With real
+numbers multiplication is a commutative operation which might cause
+confusion, as it isn't until later in your math education will you see
+examples of non-commutative multiplication, e.g. matrix multiplication.
+
+`r I(nav$add("Anonymous functions"))`
+
+A common notation for a function mathematically that emphasizes the
+fact that $f$ maps $x$ to some value $y$ involving the rule of $f$ is
+to use an arrow as:
+
+$$
+x \rightarrow -16x^2 + 32x
+$$
+
+
+You can do the exact thing in `julia` to create a function:
+
+```j
+x -> -16x^2 + 32x
+```
+
+This expression creates a function object, but since we didn't bind it to a
+variable it will be immediately forgotten. Such functions without a
+name are known as _anonymous functions_. These are useful, as we will
+see later. For now, we see that we can use them as an alternate means
+to simply define a function just by assigning the value to a name:
+
+```j
+f1 = x -> -16x^2 + 32x
+f1(1)
+```
+
+(Though, this is technically different than the function defined by
+`f(x) = -16x^2 + 32x` and for this reason, the `f(x)` style is
+used throughout the projects to assign a function name.)
+
+<i class="icon-eye-open"></i> <span class="label label-important">Alternate to composition notation</span>
+
+Usual function composition notation, e.g.:
+$$
+f \circ g(x)  \text{ or } f(g(x))
+$$
+
+has us read from inner to outer or right to left. Of course, this is a
+bit unusual to the English-reading brain, though we can easily
+compensate as needed.
+
+The arrow notation is different, it allows chaining in a natural left
+to right way. E.g., the function $f(x) = \sin(x^2)$ can be thought of
+as:
+
+
+```{r echo=FALSE}
+op = par(no.readonly=T)
+par(mai=c(0,0,0,0))
+plot.new()
+plot.window(xlim=c(0,9), ylim=c(0,2))
+arrows(0,1,1,1); arrows(3,1,5,1); arrows(7,1,9,1)
+delta = 0.1
+polygon(c(1,3,3,1) + delta*c(1,-1,-1,1), c(0,0,2,2) + 5*delta*c(1,1,-1,-1), col="gray80")
+polygon(4 + c(1,3,3,1) + delta*c(1,-1,-1,1), c(0,0,2,2) + 5*delta*c(1,1,-1,-1), col="gray80")
+text(2,1, "x -> x^2")
+text(6,1, "x -> sin(x)")
+text(.25, 1.05, "x")
+text(4.05, 1.05, "x^2")
+text(7.95, 1.05, "sin(x^2)")
+par(op)
+```
+
+(We take $x$, square it, then take the sine of that answer)
+
+This uses the familiar analogy of a function as a black box with pipes (arrows) connecting them in composition. While the arrow notation doesn't do composition,  many computer languages use `|` as the
+"pipeline" operator to mimic this. The above could be written as:
+
+```j
+x = 2
+f(x) = x^2
+x | f | sin
+```
+
+Or more directly:
+
+```j
+2 | f | sin
+```
+
+This isn't the most general way to call a function (it only works for
+functions that take and return a single variable), but for some longer
+compositions this style can be a more clear way to chain function
+calls.
+
+The subtlety is you write the function object (`sin`) after the pipe,
+not an evaluated function such as `sin(x)`.
+
+
+### Questions
+`r I(page$new_problem("..."))`
+`r I(page$new_problem(""))`
+`r I(page$new_problem(""))`
+
+<hr/>
+
+
+`r I(nav$add("Multiple arguments", "functions with parameters"))`
+
+In `julia` it is very common to have more than one argument for a
+function. For example, we saw the `log` function can use a second
+argument to express the base. Defining a function with more than one
+argument is straightforward, we just separate them by commas.
+
+For example, revisiting this function
+
+$$
+ g(x) = \tan(\theta) x + \frac{32/k}{200 \cos\theta} x -
+    \frac{32}{k} \log\left(\frac{200 \cos\theta}{200\cos\theta - x}\right).
+$$
+
+
+Rather than define them outside the function, we can pass in values
+for the _parameters_ $\theta$ and $k$ with this definition
+
+```j
+function g(x, theta, k)
+	 a = 200*cos(theta)
+	 b = 32/k
+	 tan(theta)*x + (b/a)*x - b*log(a/(a-x))
+end
+```
+
+We could then define a function with the same name `g` as
+
+```j
+g(x) = g(x, pi/4, 1/2)
+```
+
+Passing in parameters has the big advantage of explicitly showing how
+`julia` will find variables used within a function, as otherwise you
+need to have an understanding of the _scoping rules_ in place.
+
+
+When calling a function, `julia` consults its arguments to look up
+which function definition to use. Here we have either:
+
+```j
+g(50)
+```
+
+Or
+
+```j
+g(50, pi/4, 1/2)
+```
+
+The answers are the same, but the actual `g` function called is not,
+though the former just passes it's arguments down to the latter with
+some default values.
+
+
+<i class="icon-eye-open"></i> <span class="label label-important">Argument types</span>
+
+`Julia` will not only consult the number of arguments, but can also
+consider the _type_ of the argument when deciding which function
+definition to dispatch. This so-called _method overloading_ or
+_polymorphism_ is the key to many `julia` functions. We give examples
+in a later project.
+
+
+### Questions
+`r I(page$new_problem("..."))`
+`r I(page$new_problem(""))`
+`r I(page$new_problem(""))`
+
+<hr/>
+
+
+<!--- Finish this off -->
+`r I(nav$write_footer())`
+`r I(page$write_footer())`
+
