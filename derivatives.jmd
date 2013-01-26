@@ -30,7 +30,7 @@ This graph shows $f(x) = 2 - x^2$ at various secant lines at $c=-0.75$:
 ```j
 f(x) = 2 - x^2; c = -0.75
 sec_line(h) = x -> f(c) + (f(c + h) - f(c))/h * (x - c)
-plot([f, sec_line(1), sec_line(.75), sec_line(.5), sec_line(.25)], -1, 1) | orender
+plot([f, sec_line(1), sec_line(.75), sec_line(.5), sec_line(.25)], -1, 1)
 ```
 
 As the value of $h$ goes towards 0 along the path 1, .75, .5, .25,
@@ -144,7 +144,7 @@ f(2.1) - tangent_line(2.1)
 A graph shows this difference:
 
 ```j
-plot([f, tangent_line], 1.95, 2.15) | orender
+plot([f, tangent_line], 1.95, 2.15)
 ```
 
 
@@ -184,7 +184,7 @@ anonymous function in this case) that computes our approximation to
 $f'$ we can do the following:
 
 ```j
-D(f, h) = x -> forward_difference(f, x, h)
+D(f, h) = function(x) forward_difference(f, x, h) end
 D(f) = D(f, 1e-8)
 ```
 
@@ -197,7 +197,7 @@ To see this work, we can find and plot the derivative of $\sin(x)$:
 ```j
 f(x) = sin(x)
 fp(x) = D(f)(x)
-plot([f, fp], 0, 2*pi) | orender
+plot([f, fp], 0, 2*pi)
 ```
 
 Well, we already knew that should just be $\cos(x)$.  The point is we
@@ -212,7 +212,7 @@ Let's look at a different function, where we don't know in our heads the answer.
 ```j
 f(x) = exp(x)/(1 + exp(x))
 fp(x) = D(f)(x)
-plot(fp, 0, 5) | orender
+plot(fp, 0, 5) 
 ```
 
 <span class="label label-warning">Example: Critical points</span>
@@ -224,13 +224,13 @@ derivative. Let's do so for the polynomial $f(x) = x^3 - 5x + 4$:
 ```j
 f(x) = x^3 -5x + 4
 fp(x) = D(f)(x)
-plot(fp, -5, 5) | orender
+plot(fp, -5, 5)
 ```
 
 You can check the zeroes graphically, say by zooming in a bit and adding the line $y=0$:
 
 ```j
-plot([fp, x->0], -2, 2) | orender
+plot([fp, x->0], -2, 2) 
 ```
 
 If you want, you can take the derivative by hand $f'(x) = 3x^2 - 5$
@@ -362,7 +362,7 @@ Let's compare. To make our life easier we again create some functions, as we did
 
 ```j
 central_difference(f, x, h) = (f(x+h) - f(x-h))/(2h)
-Dc(f, h) = x -> central_difference(f, x, h)
+Dc(f, h) = function(x) central_difference(f, x, h) end
 Dc(f) = Dc(f, 0.0001)
 ```
 
@@ -372,7 +372,7 @@ Dc(f) = Dc(f, 0.0001)
 It is better in `julia` to qualify the argument types. For example
 ```j
 central_difference(f::Function, x::Real, h::Real) =  (f(x+h) - f(x-h))/(2h)
-Dc(f::Function, h::Real) x -> central_difference(f, x, h)
+Dc(f::Function, h::Real) function(x) central_difference(f, x, h) end
 Dc(f::Function) = Dc(f, .0001)
 ```
 
@@ -424,7 +424,7 @@ c = 1; intersection_point(c)
 You can tell from the graph of $f(x)$ that this value should be more than 1, as it is.
 
 ```j
-plot([f, x -> 0, x -> f(c) + fp(c)*(x-c)], .5, 2.1) | orender
+plot([f, x -> 0, x -> f(c) + fp(c)*(x-c)], .5, 2.1) 
 ```
 
 
@@ -624,7 +624,7 @@ table( h->  Dc4(f,h)(.5) - fp(.5), 8)
 If you load the helper functions with the command:
 
 ```j
-using Gadfly, Compose, TeachersHelpers; load_gist("4530920");
+using Gadfly, Compose, TeachersHelpers; require_gist("4530920");
 ```
 
 Then you will also load in some code to do _automatic differentiation_
@@ -654,7 +654,7 @@ It looks more complicated, but in each step we just have `(u, u') ->
 function is computing itself in the first position, the derivative is
 doing the same in the second position. So there is no loss due to
 finite differences at the added cost of having to do two things
-instead of 1.
+instead of one.
 
 This idea is implemented for the first and second derivative. To see,
 say we have $f(x) = \cos(x^2)$ and we want to compute $f'(5)$.
@@ -691,8 +691,8 @@ cos(x^2)
 
 The second number is the derivative of the function at $5$ and is
 computed along the way as accurately as the original value.  What
-makes this interesting is there are no approximations, all done by
-shadowing the usual operations. Further:
+makes this interesting is there are no approximations, everything is
+done simply by shadowing the usual operations. Further:
 
 * compared to computing derivatives symbolically (such as can be done
   via the Wolfram alpha website) the procedure is as fast as computing
@@ -718,7 +718,7 @@ Or we can plot
 
 ```j
 f(x) = x^3 - 2x + 1
-plot([f, D(f), D2(f)], -2, 3) | orender
+plot([f, D(f), D2(f)], -2, 3)
 ```
 
 How much more accurate are these derivatives? Let's compare for a
@@ -728,7 +728,7 @@ given function, say $f(x) = x^2(1-x)^{10}$.
 f(x) = x^2 * (1-x)^(10)
 fp(x) = 2x*(1-x)^(10) - x^2*10*(1-x)^9
 vstack(render(plot([x -> fp(x) - D(f)(x)], 0, 1)),    
-       render(plot([x -> fp(x) - f'(x)], 0, 1)))   | orender
+       render(plot([x -> fp(x) - f'(x)], 0, 1)))  
 ```
 
 From the scale of the $y$ axes in the graph, you can see that the
@@ -740,6 +740,70 @@ other applications.
 The automatic derivative -- as implemented here -- is limited. For
 example, you can't find `D2(f)` simply by applying `D` twice, as in
 `D(D(f))`. So some care must be taken.
+
+
+
+#### Questions
+
+`r I(page$new_problem("L'Hopital's rule"))`
+
+Later, you will learn L'Hopital's rule which says that if
+$\lim_{x\rightarrow 0} f(x)/g(x)$ has indeterminate from $0/0$, then
+if the limit of $f'(x)/g'(x)$ exists, this will be the desired
+limit. This can make something easy to do in the head:
+
+$$
+\lim_{x \rightarrow 0} \frac{\sin(x)}{x} = \lim_{x \rightarrow 0} \frac{\cos(x)}{1} = 1
+$$
+
+The latter just by plugging in. Not only does it work to make mental
+calculations easier, it can be used through automatic differentiation
+to avoid the subtraction by similar values issues we saw in looking at
+the limit at 0 of $(1-\cos(x))/x^2$.
+
+Let, 
+```j
+f(x) = 1 - cos(x); g(x) = x^2
+```
+
+Look at the expressions
+```
+[f(x)/g(x) for  x in (1/10).^(1:16)]
+[D(f)(x)/D(g)(x) for  x in (1/10).^(1:16)]
+```
+
+Do you see the trouble with numeric roundoff in the latter expression you see in the former?
+
+```{r echo=FALSE, results="asis"}
+choices <- c("Yes",
+	     "No"
+	     )
+ans <- 2
+
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
+`r I(page$new_problem("L'Hopital's rule, in action"))`
+
+Use  L'Hopital's to find the limit of 
+
+$$
+\frac{\sqrt{1 - kx} - \sqrt{1 + kx}}{x}
+$$
+
+```{r echo=FALSE}
+k <- sample(5:15, 1)
+```
+
+Use values as small as `1e-16`. What is the limit when $k=$ `r k`?
+
+
+```{r echo=FALSE, results="asis"}
+val <- k
+cat(page$numeric_choice(val - .000001, val + .000001))
+```
+
 
 
 <!--- Finish this off -->

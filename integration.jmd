@@ -17,19 +17,38 @@ $$
 \int_a^b f(x) dx = F(b) - F(a)
 $$
 
-But this theorem is usually prefaced with a definition of what the left hand side means when $f(x) \geq 0$ and $a \leq b$. This of course is the area under the curve $y=f(x)$ between $a$ and $b$. This area gives rise to a means to compute the definite integral independently of the fundamental theorem of calculus. That is, simply compute the area using increasingly better approximations.
+But this theorem is usually prefaced with a definition of what the
+left hand side means when $f(x) \geq 0$ and $a \leq b$. This of course
+is the area under the curve $y=f(x)$ between $a$ and $b$. 
+
+The problem of trying to find the area of geometric figures has long
+been studied. In the time of Pythagorus the idea of calculating area
+was one of being able to construct a square of equal area to a
+figure. This was known as _quadrature_.  Finding such answers for
+figures bounded by curves was difficult.  By Medieval Europe, the term
+_quadrature_ evolved to be the computation of an area by any
+means. For example, Galileo and Roberval found the area bounded by a
+cycloid arch. http://en.wikipedia.org/wiki/Quadrature_(mathematics)
 
 
-Before beginning, we pull in our helper functions.
-
-```j
-using TeachersHelpers; load_gist("4530920")
-```
 
 
 `r I(nav$add("Riemann sums"))`
 
-A Riemann sum is one of the simplest to understand approximations to the area under a curve. The basic idea is that the interval $[a,b]$ is partioned through points $a = x_0 < x_1 < \cdots x_n = b$ and the area under $f(x)$ between $x_i$ and $x_{i+1}$ is approximated by a rectangle with the base $x_{i+1} - x_i$ and height given by $f(x_i^*)$, where $x_i^*$ is some point in the interval $x_{i+1} - x_i$. Typical choices are the left point or the right point, or the $x$ value which minizes or maximizes $f$ over the interval. A function is called _Riemann integrable_ when the "limit" as the partion's mesh goes to $0$ of the upper and lower sums is the same. The figure shows these four choices for some sample function.
+In 1854 Riemann was the first to give a rigorous definition of the
+integral of a function on an interval, the problem we wish to solve
+here, using the concept of a _Riemann sum_. A Riemann sum is one of
+the simplest to understand approximations to the area under a
+curve. The basic idea is that the interval $[a,b]$ is partitioned
+through points $a = x_0 < x_1 < \cdots x_n = b$ and the area under
+$f(x)$ between $x_i$ and $x_{i+1}$ is approximated by a rectangle with
+the base $x_{i+1} - x_i$ and height given by $f(x_i^*)$, where $x_i^*$
+is some point in the interval $x_{i+1} - x_i$. Typical choices are the
+left point or the right point, or the $x$ value which minizes or
+maximizes $f$ over the interval. A function is called _Riemann
+integrable_ when the "limit" as the partion's mesh goes to $0$ of the
+upper and lower sums is the same. The figure shows these four choices
+for some sample function.
 
 ```{r echo=FALSE}
 ## insert figure here with the four rectangles
@@ -55,14 +74,19 @@ text(6,0, expression(x[3]), pos=1)
 text(8,0, expression(x[4]), pos=1)
 ```
 
-As with other limits, we can numerically approximate the limit by computing the Riemann sum for some partition. The steps for this include:
+As with other limits, we can numerically approximate the limit by
+computing the Riemann sum for some partition. The steps for this
+include:
 
 * creating a partition of $[a,b]$.
 * Selecting the $x_i^*$ within the partition
 * Computing the values $f(x_i^*)(x_{i+1} - x_i)$ for each $i$
 * adding these values up
 
-If we pick the left Riemann sum we can do this easily enough with the following sequence of commands. We pick $a=1$ and $b=3$ and integrate the function $x^2$. In the following we use an equal-sized partition giving  $n=10$ rectangles.
+If we pick the left Riemann sum we can do this easily enough with the
+following sequence of commands. We pick $a=1$ and $b=3$ and integrate
+the function $x^2$. In the following we use an equal-sized partition
+giving $n=10$ rectangles.
 
 ```j
 f(x) = x^2
@@ -80,8 +104,15 @@ F(x) = x^3/3
 F(b) - F(a)
 ```
 
-Not too close. We need a better approximation of course, which means simply that we need `n` to be bigger.
+Not too close. We need a better approximation of course, which means
+simply that we need `n` to be bigger.
 
+<i class="icon-eye-open"></i> <span class="label label-important">Archimedes</span>
+
+It is interesting to note that Archimedes
+(http://en.wikipedia.org/wiki/The_Quadrature_of_the_Parabola)
+effectively computed this integral about 2,000 years before Riemann
+sums using triangles, not rectangles to approximate the area.
 
 ### Questions
 
@@ -128,6 +159,22 @@ ans <- 2
 cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
 ```
 
+
+`r I(page$new_problem("How big should n be? (Strang)"))`
+
+Let $f(x) = (10 + \cos(2\pi x))^{-1}$. For the integral over $[0,1]$, the known answer is $1/\sqrt{99}$. How big must $n$ be so that the error in the Riemann sum is less than $10^{-8}$?
+
+```{r echo=FALSE, results="asis"}
+## This integral converges very fast, as the function is symmetric over the interval so the errors cancel out.
+choices <- c("5",
+	     "10",
+	     "100", "1,000", "10,000"
+	     )
+ans <- 2
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
 <hr />
 
 
@@ -144,9 +191,14 @@ In addition, we allow for the possibility of passing in a function to compute th
 In this function, instead of working in a vectorized manner with
 `map`, we opt to use a `for` loop to accumulate the area, as that
 works well with how we pass in the two points in the partition
-specifying each sub-interval. This is part of the "gist" we loaded,
-but you can also just copy and paste this into your workspace so you
-have it available going forward.
+specifying each sub-interval. 
+
+You can type or copy and paste this function in or load it into your session through:
+
+```j
+using TeachersHelpers; require_gist("4530920")
+```
+
 
 ```j
 function integrate(f::Function, a::Real, b::Real, n::Integer, approx_area::Function)
@@ -171,6 +223,7 @@ function integrate(f::Function, a::Real, b::Real, n::Integer)
 	 integrate(f, a, b, n, left_riemann)
 end
 ```
+
 
 
 ### integrate in action
@@ -239,7 +292,8 @@ Since these are also the minimum and maximum Riemann sums, the above gives a bou
 ### questions
 
 
-`r I(page$new_problem("question..."))`
+
+
 
 `r I(page$new_problem("question..."))`
 
@@ -263,6 +317,53 @@ choices <- c("That it is constant says the difference between right and left Rie
 	     "That it is constant says the difference between right and left Riemann sums is constant."
 	     )
 ans <- 2
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+`r I(page$new_problem("Rewriting: Substitution"))`
+
+According to Strang
+(http://ocw.mit.edu/resources/res-18-001-calculus-online-textbook-spring-2005/textbook/MITRES_18_001_strang_5558.pdf)
+integration routines on calculators did some tricks to make difficult
+integrals easier. He gives the example of integrating $f(x) =
+1/\sqrt{x}$ over the interval $[0,1]$, with known answer 2. This is an
+improper integral as $f(x)$ diverges as $x$ goes to 0. In practice, we
+can avoid this issue by using the right Riemann sums, as this integral
+does exist.
+
+ Okay, what is the trick? One can use a technique called
+_substitution_ to see that if we let $h(u) = 3u^2 - 2u^3$ that
+
+$$
+\int_0^1 f(x) dx = \int_0^1 f(h(u)) h'(u) du
+$$
+
+Let $g(u) = f(h(u))h'(u) = 6u(1-u)/\sqrt{3u^2 - 2u^3}$. Then the above is $\int_0^1 g(u) du$. This trick has two purposes:
+
+* if you cancel a common $u$ on top and bottom, the integral of $g$ is a proper integral
+* It also mixes up the regularity of points used to integrate which in the case of periodic functions can lead to _aliasing_.
+
+The right Riemann sum of $f(x)$ at $n=100,000$ is not even accurate at the scale of `1e-3`:
+
+```j
+f(x) = 1/sqrt(x)
+abs( 2 - integrate(f, 0, 1, 100000, right_riemann) ) < 2e-3
+```
+
+```{r echo=FALSE}
+n = floor(runif(1, 1000, 5000))
+```
+
+
+Is $g$ accurate to within `1e-3` by $n=$ `r n`?
+
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("Yes",
+	     "No"
+	     )
+ans <- 1 + as.numeric(n < 1733)
 cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
 ```
 
@@ -576,7 +677,36 @@ Find the arc length of the cable in meters.
 val <- 1341.1191
 cat(page$numeric_choice(val - .1, val + .1))
 ```
-	
+
+
+`r I(page$new_problem("The tractix"))`	
+
+A boat sits at the point $(a, 0)$ and a man holds a rope taut attached to the boat at the origin $(0,0)$. The man walks on the $y$ axis. The position $y$ depends then on the position $x$ of the boat, and if the rope is taut, the position satisfies:
+
+
+$$
+y = a \ln\frac{a + \sqrt{a^2 - x^2}}{x} - \sqrt{a^2 - x^2}
+$$
+
+This can be entered into `julia` as:
+
+```j
+g(x, a) = a * log((a + sqrt(a^2 - x^2))/x) - sqrt(a^2 - x^2)
+```
+
+Let $a=10$, $f(x) = g(x, a)$. We can compute the length the bow of the boat has traveled between $x=a$ and $x=1$ using $n=10,000$ with:
+
+```j
+a = 10
+f(x) = g(x, a)
+integrate(x -> sqrt(1 + D(f)(x)^2), 1, a, 10000)
+```
+
+However, the most elementary description of this problem is in terms
+of the relationship $dy/dx = -\sqrt{a^2-x^2}/x$. (You can draw the
+picture.) With this replacing $f'(x)$ do you get the same answer?
+
+
 <hr/>
 
 
@@ -652,13 +782,127 @@ By contrast, the error for the trapezoid method will be like $n^{-2}$ and the le
 <hr/>
 
 
+`r I(nav$add("Gauss quadrature", "Using weights"))`
+
+One can rearrange the trapezoid rule to become:
+
+$$
+\delta f(x_1) + 2\delta f(x_2) + 2 \delta f(x_3) + \cdots + 2 \delta f(x_{n}) + \delta f(x_{n+1})
+$$
+
+where $\delta = (b-a)/n$. This has a general form of
+
+$$
+\sum_k w_k f(x_k)
+$$
+
+where $w_k$ are weights. So, an alternative way to do the trapezoid formula for $n=4$ might be:
+
+```j
+a = 0; b = 1; n = 4
+f(x) = x^2
+delta = (b-a)/n
+w = delta * [1, 2, 2, 2, 1] ## delta * [1, repeat([2],n-1), 1]'
+x = a + [1:n+1] * delta
+fk = map(f, x)
+sum(w .* fk)   ## sum(w .* map(f, x)) showing all three at once are important. Note .* is needed
+```
+
+There are similar weights that can be computed for the other rules
+(left, right, Simpsons). For example, The Simpson weights for even $k$
+are:
+
+$$
+\delta * \{1, 4, 2, 4, 2, 4, 2, \dots, 4, 2, 1\}
+$$
+
+with $\delta = (b-a)/(6n)$.
+
+The compact code to compute the approximate integral, `sum(w .* map(f, x)`, shows there are
+three important things in this form of the integral: the weights, the
+_nodes_ or $x$ values, and the function. The use of equally spaced
+nodes has been used by us so far, but it need not be the case. If fact
+Gauss showed he could get similar answers faster if it wasn't the
+case.
+
+The Gauss nodes and weights are computable
+(http://en.wikipedia.org/wiki/Gaussian_quadrature). The code is in the
+gist. The main tools are the Legendre polynomials, which can be
+defined recursively with Bonnet's formula:
+
+$$
+P_0(x) = 1; P_1(x) = x; \quad  n P_{n}(x)  = (2(n-1)+1) x P_{n-1}(x) -(n-1) P_{n-2}(x).
+##
+
+Using `julia`'s `Polynomial` class this can be
+implemented almost verbatim:
+
+```j
+require("poly.jl")
+function lgp(n::Integer) 
+    if n == 0 return Polynomial([1]) end
+    if n == 1 return Polynomial([1, 0]) end
+    
+    (2*(n-1) + 1) / n * lgp(1) * lgp(n-1) - (n-1)/n * lgp(n-2)
+end
+```
+
+This is used as,
+
+```j
+p4 = lgp(4)
+```
+
+The term _recursion_ is applied to a function  when it makes a reference to itself during a computation. With this function,
+don't try it with  values much bigger than $20$, as the recursion can take a long time.
+
+The nodes are the roots of the right polynomial. Here we have the values for `p4`
+```j
+roots(p4)
+```
+
+The weights are just a bit more involved, so we don't show how to
+compute the. Rather, both the weights and the nodes are returned by
+the function `gauss_weights`, which is used like:
+
+```j
+w, x = gauss_weights(4); [w x]
+```
+
+From here `gauss_quadrature` will do the integration of `f` over the interval $[-1,1]$, though we can do it ourself quickly enough. Here we compute the integral of $\cos(\pi/2 x)$ over $[-1,1]$ (you can check this is very close to the answer $4/\pi$ even with just 4 nodes):
+
+```j
+f(x) = cos(pi/2*x)
+sum( w .* map(f, x) )
+```
+
+
+We integrate the value of $f(x) = 1/(x^4 + x^2 + 0.9)$ over $[-1, 1]$ with just 10 nodes:
+
+```j
+gauss_quadrature( x -> 1/(x^4 + x^2 + 0.9), 10)
+```
+
+which is accurate to `1e-6`.
+
+
+
+
+
+
 `r I(nav$add("Adaptive integration"))`
 
 
-We end with a brief discussion about an alternative means to compute integrals. The following function `apapt` implements a basic _adaptive quadrature_ method for integration. The basic idea is that for a subinterval $[a,b]$ if the area of the trapezoid is not close to the area of Simpson's parabolic estimate then the subinterval is split into two pieces $[a,c]$ and $[c,b]$ and the same question is asked. If the area is close the Simposon's parabolic estimate is used to estimate the integral of $f$ over that subinterval.
+We end with a brief discussion about an alternative means to compute
+integrals. The following function `apapt` implements a basic _adaptive
+quadrature_ method for integration. The basic idea is that for a
+subinterval $[a,b]$ if the area of the trapezoid is not close to the
+area of Simpson's parabolic estimate then the subinterval is split
+into two pieces $[a,c]$ and $[c,b]$ and the same question is asked. If
+the area is close the Simposon's parabolic estimate is used to
+estimate the integral of $f$ over that subinterval.
 
-The programming this algorithm shows off _recursion_. This is a term
-used when a function calls itself to compute an answer. To avoid
+Again, we see _recursion_ when  programming this algorithm.  To avoid
 infinite loops during this, we use a limit below to keep track.
 
 In general, the value of adaptive methods like this, is the function

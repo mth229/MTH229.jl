@@ -49,7 +49,8 @@ plot_nm <- function(f, fp, x0, from, to, diff_tol=NA, max_ctr=25) {
 
 
 Newton's method is an old method for _approximating_ a zero of a
-function. Previously we discussed the _bisection method_ to solve for an $x$ where
+function. Previously we discussed the _bisection method_ to solve for
+an $x$ where
 
 $$
 f(x) = 0
@@ -67,10 +68,11 @@ some examples, and then look at what can go wrong.
 
 `r I(nav$add("Basic idea"))`
 
-The idea behind Newton's method is simple: A function near a point is
-well approximated by it's tangent line. If we have a good guess $x_n$, then
-we can improve this guess iteratively by replacing it with the zero, $x_{n+1}$, of
-the tangent line.
+The idea behind Newton's method is simple -- _linear approximation_. 
+That is, some function at a point are well
+approximated by the tangent line at that point. If we have a good
+guess $x_n$, then we can improve this guess iteratively by replacing
+it with the zero, $x_{n+1}$, of the tangent line.
 
 
 ```{r echo=FALSE}
@@ -113,10 +115,11 @@ $$
 x_{n+1} = x_n - f(x_n)/f'(x_n),
 $$
 
-which some books write  as $x_n - f'(x_n)^{-1} f(x_n)$, as this generalizes to higher dimensions.
+which some books write as $x_n - f'(x_n)^{-1} f(x_n)$, as this
+generalizes to different settings.
 
 
-The method is an _iterative method_. One begins with a (suitable)
+Like the bisection method, Newton's method is an _iterative method_. One begins with a (suitable)
 guess $x_0$. From that the algorithm produces $x_1$ which is used to
 produce $x_2$, etc. The idea is that one eventually will settle on a
 value $x_n$ sufficiently close to the desired root.
@@ -125,7 +128,8 @@ value $x_n$ sufficiently close to the desired root.
 
 Mathematically, the inidices indicate that the right hand side is
 computed and assigned to the left hand side. This is exactly what is
-done in assignment within `julia`, so in `julia` the above simply becomes:
+done in assignment within `julia`, so in `julia` the above simply
+becomes:
 
 ```
 julia> x = x - f(x)/fp(x)
@@ -133,14 +137,15 @@ julia> x = x - f(x)/fp(x)
 
 Where `f(x)` is the function and `fp(x)` its derivative. This line
 starts with a previously defined value of `x` and updates it
-accordingly. 
+accordingly.
 
 
 The updating is continued -- by executing the exact same command --
 until either the algorithm has gotten close enough our answer (it has
 converged) or we have given up on it converging -- it took too long.
 
-We can determine two ways that the number is close enough to the answer: 
+We can determine two ways that the number is close enough to the
+answer:
 
 * The sequence of `x`'s stop changing by much
 * the values `f(x)` get close enough to zero.
@@ -167,12 +172,14 @@ clear by what we mean by "close enough".
 
 
 
-Here is an example to find a zero of the cosine function:
+Here is an example to find a zero of the function: $f(x) = x^3 - 2x -
+5$.
 
 ```j
-f(x) = cos(x)
-fp(x) = -sin(x)
-x = pi/2 + .3 ## some x0 initial guess
+f(x) = x^3 - 2x - 5
+fp(x) = 3x^2 - 2
+x = 2
+x = x - f(x)/fp(x)
 x = x - f(x)/fp(x)
 x = x - f(x)/fp(x)
 x = x - f(x)/fp(x)
@@ -189,8 +196,43 @@ abs(f(x)) < tol
 
 You can see in this case that the convergence happens quickly as soon as the algorithm gets close.
 
+
+<i class="icon-eye-open"></i> <span class="label label-important">History</span>
+
+Newton looked at this example in 1699 (B.T. Polyak, _Newton's method
+and its use in optimization_, European Journal of Operational
+Research. 02/2007; 181(3):1086-1096.) though his technique was
+slightly different as he did not use the derivative, per se, but
+rather an approximation based on the fact that his function was a
+polynomial (though identical to the derivative). Raphson (1690)
+proposed the general form, hence the usual name of Newton-Raphson method.
+
+
 <hr />
 `r I(page$new_problem("Try it yourself..."))`
+
+Using Newton's method to find $\sqrt{k}$ (by solving $f(x) = k$) is
+also referred to as the Babylonian method, due to its origins. The resulting method
+
+$$
+x_{n+1} = \frac{1}{2}(x_n + \frac{k}{x_n})
+$$
+
+is described by the first-century Greek mathematician Hero of Alexandria. (http://en.wikipedia.org/wiki/Babylonian_method).
+
+```{r echo=FALSE}
+x0 <- floor(runif(1, 3,4)*100)/100
+```
+Let $k=15$ and $x_0$ be `r x0`. What is the value of $x_3$? 
+
+
+```{r echo=FALSE, results="asis"}
+f = function(x)  1/2*(x + 15/x)
+val = f(f(f(x0)))
+cat(page$numeric_choice(val - .00001, val + .00001))
+```
+
+
 
 ... fill me in ...
 
@@ -289,16 +331,6 @@ nm(f, fp, 0)
 
 `r I(page$new_problem("Some question"))`
 
-Let $f(x) = x^3 - 2x -5$. Apply Newton's method starting at $x=2$. What is your approximate root?
-
-
-```{r echo=FALSE, results="asis"}
-val = 2.094551481698199
-cat(page$numeric_choice(val - .001, val + .001))
-```
-
-(Newton looked at this problem himself, though with a different method, getting the estimate $2.09455147$. http://www.math.uiuc.edu/documenta/vol-ismp/13_deuflhard-peter.pdf).
-
 `r I(page$new_problem("Some question"))`
 
 Repeat the problem of finding a root of $f(x) = \exp(x) - x^4$ starting
@@ -355,19 +387,22 @@ cat(page$numeric_choice(val - .001, val + .001))
 <span class="label label-warning">Example: Numeric derivatives</span>
 
 
-In order to use Newton's method we need to evaluate by hand both $f(x)$ and
-$f'(x)$. This isn't technically necessary, as we can numerically
-approximate the latter, as we demonstrate next. Recall that we used in
-a previous project a definition for an approximate first derivative
-and defined a `'` operator. We load the work here with:
+In order to use Newton's method we need to evaluate by hand both
+$f(x)$ and $f'(x)$. This isn't technically necessary, as we can
+numerically approximate the latter, as we demonstrate next. Recall
+that we used in a previous project a definition for an approximate
+first derivative and defined a `'` operator. We load the work here
+with:
 
 ```j
-using TeachersHelpers; load_gist("4530920")
+using TeachersHelpers; require_gist("4530920")
 ```
 
-This allows us to numerically differentiate $f(x)$ in the algorithm quite simply.
+This allows us to numerically differentiate $f(x)$ in the algorithm
+quite simply.
 
-Let $f(x) = \exp(x) - x^4$ and set $x_0 = -1$. We can find a root with the following command:
+Let $f(x) = \exp(x) - x^4$ and set $x_0 = -1$. We can find a root with
+the following command:
 
 
 ```j
@@ -375,7 +410,8 @@ f(x) = exp(x) - x^4
 nm(f, f', -1)
 ```
 
-We could have done the same computation with the automatic derivative given by `D(f)`:
+We could have done the same computation with the automatic derivative
+given by `D(f)`:
 
 ```j
 nm(f, D(f), -1)
@@ -452,7 +488,7 @@ We graph the function to see, using a smallish interval at first:
 
 ```j
 f(x) = x^x - 2
-plot([f, x -> 0], 0, 2) | orender
+plot([f, x -> 0], 0, 2)
 ```
 
 Eyeing this, we pick an initial point, $1$, for Newton's method to the
@@ -471,6 +507,7 @@ define our 5 values and a function which computes the squared
 difference from a given value of these numbers.
 
 ```j
+vals = [1, 4, 5, 6, 8]
 f(x) = sum([(x - i)^2 for i in vals])
 ```
 
@@ -480,18 +517,24 @@ f(x) = sum([(x - i)^2 for i in vals])
 f(x) = sum((x - vals).^2)
 ```
 
-but this won't work with our approximate derivatives, so we'd need `f'` and `f''` below).
+but this won't work with our approximate derivatives -- the
+implementation isn't vectorized, so we'd need `f'` and `f''` below).
 
 
-The minimum value of `f(x)` will occur at the mean of the 5
-numbers. So instead of `f` we start with finding the (lone) critical
-point of $f$ which is when $f'(x) = 0$. This means we pass the
-derivative and its derivative (the second derivative of $f$) to
-Newton's method.
+It is known that the minimum value of `f(x)` will occur at the mean of the 5
+numbers. 
+
+
+When trying to find the minimum of a function, we know that a
+consideration of the critical points of $f$ are in order. Critical
+points satisfy $f'(x) = 0$ (Fermat's condition). As such, we apply
+Newton's method to $f'$ -- not $f$. This requires us to pass the first
+and second derivatives of $f$ to our `nm` function:
 
 ```j
 (x, ctr) = nm(D(f), D2(f), 0)
 ```
+
 
 Here we see that indeed we found the mean (average) value:
 
@@ -590,12 +633,11 @@ What do you get?
 
 
 ```{r echo=FALSE, results="asis"}
-choices <- c("XXX",
-	     "-2x",
-	     "XYZ"
+choices <- c("$x - (1/3)x^{-1/3}$",
+	     "$-2x$",
+	     "x - 3/x"
 	     )
 ans <- 2
-comment <- setNames(list("XXX", "Nope. You are just guessing?"), choices[-ans])
 
 cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
 ```
@@ -605,7 +647,7 @@ cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
 #### Cycles
 
 Here is a pathological example where the value always cycles no matter
-where you start, provided you avoid 0.
+where you start except 0.
 
 Let $f(x) = \sqrt(\mid x \mid)$. This is the one-sided square root function
 turned into an even function. We could also have defined it by:
@@ -652,9 +694,6 @@ No matter where you start (except at 0), this will cycle back and forth.
 
 `r I(nav$add("Quadratic convergence"))`
 
-
-
-
 How fast does Newton's method converge? It depends on the function of
 course. For some functions, it may not converge at all. Suppose our
 function $f(x)$ satisfies $f(\alpha) = 0$ and has a third derivative
@@ -678,10 +717,10 @@ the second and first derivative. This nicely illustrates the three things that c
 * The second derivative is not small. (Then the bound is also big.)
 
 
-In practice, what this mean is that for good functions once `x` gets
+In practice, what this means is that for good functions once `x` gets
 close, successive `x` values should be differ at a decimal point that
 is like the first, second, fourth, then eighth. This is termed
-_quadratic convergence_.
+_quadratic convergence_ and was shown by Fourier in 1818 to hold.
 
 Let's see. A quick graph of $f(x)$ below shows the answer to be near
 0.4, where we begin
@@ -701,6 +740,48 @@ So essentially with a good guess, the convergence is very fast.
 ### Questions
 
 `r I(page$new_problem("speed ..."))`
+
+Surprisingly, if one is close enough to the root with the initial
+guess $x_0$, then one can modify Newton's method to use the derivative
+at $x_0$ only. That is, this update formula can be  used:
+
+$$
+x_{n+1} = x_n - f(x_n)/f'(x_0)
+$$
+
+This has the advantage that the derivative need only be computed once, not each step. The disadvantage is the speed of convergence.
+Copy and paste this code into `julia`. Clearly both sequences converge, but do they agree to 5 decimal places by the 20th term?
+
+```
+f(x) = x^3 - 2x - 5
+fp(x) = 3x^2 - 2
+
+n = 20
+xs = Array(Float64, n)
+ys = Array(Float64, n)
+
+xs[1] = 3; ys[1] = 3
+
+for i in 1:(n-1)
+    xs[i + 1] = xs[i] - f(xs[i])/fp(xs[i])
+    ys[i + 1] = ys[i] - f(ys[i])/fp(ys[1])
+end
+
+[xs ys]
+```
+
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("Yes",
+	     "No"
+	     )
+ans <- 2
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
+
 `r I(page$new_problem("speed ..."))`
 `r I(page$new_problem("speed ..."))`
 

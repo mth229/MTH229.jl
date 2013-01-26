@@ -18,35 +18,29 @@ arrived at. As such, we don't try to teach the details of any one of
 them. That being said, we can do all we need with the `plot` function
 from the `Gadfly` package.
 
-`r I(nav$add("Gadfly", "plot"))`
+This function makes graphing (almost) as easy as this:
 
-Like many programming languages, `julia`
-extends its core language with user-defined packages. We leverage the
-`Gadfly` package for plotting. Installing packages is mostly
-painless, though one needs to instruct `julia` to do so. For this we
-have a few things to do, should it not already by done.
-
-First, the `Gadfly` package must be installed. `Julia` has a built in
-package manager to take care of these details.
-
-Now, if you have never installed a package, you need to initialize
-things. It is done through
-
-```
-Pkg.init()    ## this is only needed to be done once
+```j
+f(x) = exp(-x^2/2)
+plot(f, -3, 3)
 ```
 
-Now we can install the `Gadfly` package:
+
+`r I(nav$add("Gadfly", "plot and orender"))`
+
+Like many programming languages, `julia` extends its core language with user-defined packages. We leverage the `Gadfly` package for plotting. Installing packages is mostly painless, though one needs to instruct `julia` to do so. For this we have a few things to do, should it not already by done.
+
+First, the `Gadfly` package must be installed. `Julia` has a built in package manager to take care of these details. We install the `Gadfly` package with this command:
 
 ```
 Pkg.add("Gadfly")  ## This installs the package. It only needs doing once.
 ```
 
 
-The above is done only one time to install the package. (There is an update feature too.) However, within each session you must first bring the package features into your workspace with the `using` command:
+The above is done only one time to install the package onto your computer. It requires a working internet connection, of course. (There is an update feature to install newer versions of a package.) However, within each session you must first bring the package features into your workspace with the `using` command. Here we load the `Gadfly` package:
 
 ```j
-using Gadfly, Compose
+using Gadfly
 ```
 
 The latter lets us actually draw the graphic. If all goes well, that is it for `Gadfly`.
@@ -64,43 +58,50 @@ as in
 p = plot(sin, 0, 2pi)
 ```
 
-That creates -- but does not draw, or render, the graphic. For that we need another command. The `Gadfly` package uses `Compose` to create `svg` files.  To view these we can use a browser. This would be a two step process: save the file, load in the browser. To avoid this, we provide a function `orender` in the `TeachersHelpers` package.
+That creates the graphic, but does not actually draw or render it on the screen. For that we need another command. The `Gadfly` package uses `Compose` to create `svg` files.  To view these we can use a browser. This would be a two step process: save the file, load in the browser. To avoid this, we provide a function `orender` in the `TeachersHelpers` package.
 
 First install that package if you haven't already
 (`Pkg.add("TeachersHelpers")). Then "use" the package with
 
+Then we would use this command to load all the packages we need at once:
+
 ```j
-using TeachersHelpers  ## or all on one line: using Gadfly, Compose, TeachersHelpers
+using Gadfly, Compose, TeachersHelpers 
 ```
 
-Then viewing a plot is as easy as piping the output through `orender`:
+With this,  viewing a plot is as easy as calling `orender` on the output:
 
 ```j
-p = plot(sin, 0, 2pi)
 orender(p)
 ```
 
-Or in one line (our preferred style in these projects):
+We prefer to place `orender` in a pipe as follows, rather than save the plot object, as above
 
 ```j
 plot(x -> exp(x) + exp(-x), -2, 2) | orender
 ```
 
-The last two examples show the two styles you can use to specify the
-function object. Either you have a name for the function, such as
-`sin`, of 'f', and you use that. (With no `(x)`!) Or, you can use an
-_anonymous function_, a very useful for one-off functions.
+<i class="icon-eye-open"></i> <span class="label label-important">Rendering the graphic</span>
+
+Outside of this project, we skip the `orender` step in the notes, but keep in mind that you will need to do something to make the plot object appear on a screen.
+
+<hr/>
 
 
 
-Here we demonstrate some more by plotting a simple polynomial
+
+The last two examples show the two styles you can use to specify the function object. Either you have a name for the function, such as `sin`, of 'f', and you use that. (With no `(x)`!) Or, you can use an _anonymous function_, a very useful style for one-off functions we will use often.
+
+
+
+Again, we plot a function, this time a basic polynomial:
 
 ```j
 f(x) = x^2 - 2x + 2
 plot(f, -3, 3) | orender
 ```
 
-Of the same function squared:
+Using an anonymous function, we now graph that same function squared:
 
 ```j
 plot(x -> f(x)^2, -3, 3) | orender
@@ -141,11 +142,11 @@ Some features that are identifiable by calculus concepts are:
 For example, if you want to find zeroes of a function, you really
 want to look areas of the graph where the $y$ values are close to
 $0$. However, if you have a vertical asymptote on the same graph, the
-$y$ values might also be asked to show very large of small
+$y$ values might also be asked to show very large or small
 values. With only a finite number of pixels available, it is impossible to
 easily do both.
 
-What to do? Well, if you want to look at zeroes, avoid the
+What to do? Well, if you want to look at zeroes or other subtle features of the graph, avoid the
 asymptotes. This is done simply by not plotting for those values of
 $x$.
 
@@ -184,17 +185,8 @@ plot( x -> 1/x, 0 + delta, 3) | orender
 That's better. The choice of `delta=0.1` was made, as this value obviously gives 10 -- a reasonably sized number for this -- when $f(x)$ is applied. Other functions may have different choices.
 
 
-// XXX How to do two functions with different domains!
-// Now to do both parts at once. 
-//
-//
-// ```
-// delta = 0.1
-// p = plot( x -> 1/x, -3, 0 - delta)
-// plot(p, x -> 1/x, 0 + delta, 3) | orender
-// ```
+XXX Need to wait for Gadfly improvements to graph two functions with different domains
 
-// That's better.
 
 So, the solution is to back away from any asymptotes, a task which might take more than one graph.
 
@@ -235,6 +227,26 @@ With this, we see the minimum is near $y=20$.
 `r I(page$new_problem(""))`
 
 <hr/>
+
+`r I(nav$add("Labels"))`
+
+The labels for the $x$ and $y$ axes are set by default and changing them can be tedious. This function can be used to do so.
+
+```j
+function add_labels(p::Plot, xlab, ylab) 
+	 p.mapping[:x] = xlab
+	 p.mapping[:y] = ylab
+	 p
+end
+```
+
+It could be used as follows:
+
+```j
+plot(sin, 0, pi) | p -> add_labels(p, "x-values", "f(x)=sin(x)")
+```
+
+### XXX need to be able to a) change labels b) add point c) label point ...
 
 `r I(nav$add("Arrays"))`
 
@@ -290,11 +302,7 @@ These create "vectors." (Our printing display horizontally to save space, but th
 [13 21 34 55]
 ```
 
-We will use just column vectors. If you have a row vector, the transpose operator `'` will convert:
-
-```j
-[13 21 34 55]'
-```
+We will use just column vectors.
 
 <h4>Creating arithmetic sequences</h4>
 
@@ -304,12 +312,14 @@ $$
 a, a + h, a+2h, a+3h, ..., a + nh
 $$
 
-It should be possible to specify these either by 
+It should be possible to specify arithmetic sequences either by 
 
 * the start and end points and the number of points employed
 * the start and end points and step size. 
 
-In `julia` the `linspace` function will the former and the range operator the latter. Here are 5 evenly spaced numbers from $0$ to $pi/2$:
+In `julia` the `linspace` function will do the former and the range operator the latter. 
+
+Here are 5 evenly spaced numbers from $0$ to $pi/2$ given by `linspace`:
 
 ```j
 linspace(0, pi/2, 5)
@@ -415,7 +425,7 @@ The value `end` can be used in a range when indexing:
 x[2:end]
 ```
 
-(But not without, as you can see by typing `2:end` by itself.)
+(But not without indexing, as you can see by typing `2:end` by itself.)
 
 
 
@@ -452,7 +462,7 @@ Then the `map` function will create the corresponding $y$ values:
 map(f, x)
 ```
 
-The syntax of `map` requires a slight pause. Here we do not actually call the function `f`, as in `f(2)`. Rather, we pass the name of the function to the `map` argument -- and `map` calls the function for each value in the column vector `x` and returns a corresponding column vector.
+The syntax of `map` requires a slight pause. Here we do not actually call the function `f`, as in `f(2)`. Rather, we pass the name of the function to the `map` argument -- and `map` calls the function for each value in the column vector `x` and returns a corresponding column vector. We do the same thing with `plot`.
 
 2) **Comprehensions:** Mathematically we grow familiar with set notation. One way to describe the values $y$ we are talking about might be:
 
@@ -506,6 +516,7 @@ Conceptually this is the opposite of `map` where we think of the function acting
 In some languages for loops are avoided if possible, as they can be slower. As well, the can require extra bookkeeping, such as needing to allocate a container for the answers. That being said, in `julia` they are widely used for speed and storage reasons. As well, they are used when we need to refer to more than one index. An example of that is the following way to create a Fibonacci pattern from the formula $x_i = x_{i-1} + x_{i-2}$:
 
 ```j
+x = In
 x = [1,1]; n=10;
 for i in 3:n
     push!(x, x[i-1] + x[i-2]) ## push! extends the vector x
@@ -583,9 +594,8 @@ plot([f, g], -4, 4) | orender
 Not all pairs of functions will naturally appear on the same $x$ and $y$ axes, as the scale of them may be way off. Yet, you may still wish to compare them. With some work, one can stack figures vertically. Here is an example
 
 ```j
-p1 = plot(x -> x^2 + 3x + 10, -4, 4)
-p2 = plot(x -> 2x + 3, -4, 4)
-vstack(render(p1), render(p2)) | orender
+vstack(render(plot(x -> x^2 + 3x + 10, -4, 4)),
+       render(plot(x -> 2x + 3       , -4, 4))) | orender
 ```
 
 The last magic syntax makes it all work. Don't bother trying to figure out why, but tuck away in the back of your mind this possibility. 
@@ -594,6 +604,37 @@ The last magic syntax makes it all work. Don't bother trying to figure out why, 
 
 ### Questions
 `r I(page$new_problem("  ..."))`
+
+Define $f(x)$ to be a triangular function as follows:
+
+```j
+f(x) = abs(x) > 1 ? 0.0 : 1.0 - abs(x)
+```
+
+In many applications, the following transformation is employed:
+
+$$
+g(x, c, h) = \frac{1}{h} f(\frac{x - c}{h})
+$$
+
+For constants $h$ and $c$.
+
+Make a graph of both $f(x)$ and $g(x, 1, 1/2)$ over the interval $[-2,3]$. Consult the graph to see which statement is true?
+
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("The graph of g is centered at c=1 and has maximum height h=1/2",
+	     "The graph of g is centered at c=1 and has area h=1/2",
+	     "The graph of g is centered at c=1 and has area 1/h=2",
+	     "The graph of g is centered at c=1 and has the same area as f"
+	     )
+ans <- 4
+
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
 `r I(page$new_problem(""))`
 `r I(page$new_problem(""))`
 

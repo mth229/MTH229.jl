@@ -99,11 +99,50 @@ Here there is no difference, and we take the limit to be $1$.
 
 `r I(page$new_problem("Find the limit ..."))`
 
+$(1+x)^{1/x}$
+
+`r I(page$new_problem("Find the limit ..."))`
+
+
+$log(1+x)/x$ (same)
 `r I(page$new_problem("Find the limit ..."))`
 
 `r I(page$new_problem("Find the limit ..."))`
 
-`r I(page$new_problem("Find the limit ..."))`
+(From Strang, attributed to Stein.)
+
+Look at the figure:
+
+```r
+theta = pi/6
+r = 1
+plot.new()
+plot.window(xlim=c(0,1), ylim=c(0,sin(theta)))
+polygon(c(0, cos(theta), cos(theta)), c(0, 0, sin(theta)))
+
+t = seq(0, theta, length=100)
+polygon(c(cos(theta), 1, cos(t)), c(0, 0, sin(t)), col="gray")
+text(.15 * cos(th(eta/2), .15 * sin(theta/2), "theta")
+text(.5, 0, "1", pos=1)
+```
+
+Let $f(\theta)$ be the area of the triangle and $g(\theta)$ the shaded region. What is the limit 
+
+$$
+\lim_{\theta \rightarrow 0+} \frac{f(\theta)}{g(\theta)}?
+$$
+
+
+
+```{r echo=FALSE, results="asis"}
+val <- 1
+cat(page$numeric_choice(val - .000001, val + .000001))
+```
+
+
+
+
+
 
 
 `r I(page$new_problem("Some problem ..."))`
@@ -178,7 +217,7 @@ Related in that they are used to approximate related functions near
 $0$ with $\sin(x) \approx x$ and $\cos(x) \approx 1 - (1/2) x^2$. A graphic shows the latter one:
 
 ```j
-plot([cos, x -> 1-(1/2)x^2], -pi, pi) | orender
+plot([cos, x -> 1-(1/2)x^2], -pi, pi) 
 ```
 
 Note in the figure how the parabola tracks the shape of the cosine

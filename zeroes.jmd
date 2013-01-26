@@ -154,7 +154,7 @@ The `polyval` function does the hard work. It multiplies the coefficients of `p`
 For example, we can graph `f` with
 
 ```j
-plot(f, -1, 3) | orender
+plot(f, -1, 3)
 ```
 
 
@@ -197,7 +197,7 @@ easily enough. Let's guess the distance is no more than 500 feet:
 ```j
 theta = pi/4
 h(x) = tan(theta) * x - 16(x/(200cos(theta)))^2
-plot(h, 0, 500) | orender
+plot(h, 0, 500)
 ```
 
 Well, we haven't even seen the peak yet. Better to do a little spade
@@ -225,7 +225,7 @@ quadratic(a, b, c)
 Rounding up, we see that 1250 is the value. So we plot over this domain to see:
 
 ```j
-plot(h, 0, 1250) | orender
+plot(h, 0, 1250)
 ```
 
 As for `g`, we first define the function. This same function appeared
@@ -244,7 +244,7 @@ end
 A quick plot over the same interval, $[0, 1250]$ yields:
 
 ```j
-plot(g, 0, 1250) | orender
+plot(g, 0, 1250)
 ```
 
 Oh, a bounds error. Of course, when $x > a$ the logarithm fails.  We
@@ -253,20 +253,20 @@ subtracting $1$:
 
 ```j
 a = 200*cos(theta)
-plot(g, 0, a - 1) | orender
+plot(g, 0, a - 1) 
 ```
 
 
 Now we can see the zero is between 130 and 140. We re-plot:
 ```j
-plot(g, 130, 140) | orender
+plot(g, 130, 140)
 ```
 
 Finally, we plot between 134 and 135 and draw the line for $y=0$ to
 see the zero clearly:
 
 ```j
-plot([g, x -> 0], 134, 135) | orender
+plot([g, x -> 0], 134, 135)
 ```
 
 The answer is approximately $134.8$
@@ -276,7 +276,7 @@ Finally, we plot both graphs at once to see that it was a very windy
 day indeed.
 
 ```j
-plot([h, g] , 0, 1250) | orender
+plot([h, g] , 0, 1250) 
 ```
 
 <hr />
@@ -498,10 +498,22 @@ end
 ```
 
 The above can be copy-and-pasted into a `julia` session or loaded
-(along with the other long functions used in the projects) via
+(along with the other long functions used in the projects) via this:
+
+```j
+using JSON
+function require_gist(id::String)
+    require_content(content) = begin _f = tempname(); io = open(_f, "w"); write(io, content); close(io); require(_f); run(`rm $_f`) end  
+    gist = (open(download_file("https://api.github.com/gists/$id")) | readlines | join | JSON.parse)
+    [require_content(gist["files"][nm]["content"]) for nm in keys(gist["files"]) ]
+end
+require_gist("4530920")
+```       	    
+
+If you have the `TeachersHelpers` package, this can be done through:
 
 ```julia
-using TeachersHelpers; load_gist("4530920")
+using TeachersHelpers; require_gist("4530920")
 ```		    
 
 
@@ -550,7 +562,7 @@ looking over the entire domain at once will be problematic:
 
 ```j
 f(x) = exp(x) - x^4
-plot(f, 0, 10) | orender
+plot(f, 0, 10)
 ```
 
 
@@ -559,7 +571,7 @@ shows these are good choices to use. For example, between $8$ and $9$
 we have:
 
 ```j
-plot([f, x->0], 8, 9) | orender
+plot([f, x->0], 8, 9)
 ```
 
 So we find the values of the zero in the bracketed region $[8,9]$:

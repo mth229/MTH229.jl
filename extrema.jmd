@@ -37,9 +37,9 @@ point_ of $f$ or at the endpoints, $a$ and $b$.
 
 Though not all of our problems lend themselves to a description of a continuous function on a closed interval, if they do we have an analytic prescription to  find the absolute extrema of a function 
 
-* find the critical points
-* evaluate the function values there and at the end points. 
-* Find the largest and smallest values.
+* Find the critical points. For this we will use Newton's method to find $f'(x) = 0$, as appropriate.
+* Evaluate the function values there and at the end points. 
+* Identify the largest and smallest values.
 
 With the computer we can take some shortcuts, as we will be able to
 graph our function to see where the extreme values will be.
@@ -48,7 +48,7 @@ graph our function to see where the extreme values will be.
 Before beginning we pull in our packages for plotting and our useful functions:
 
 ```j
-using TeachersHelpers, Gadfly, Compose; load_gist("4530920")
+using TeachersHelpers, Gadfly, Compose; require_gist("4530920")
 ```
 
 
@@ -56,12 +56,7 @@ using TeachersHelpers, Gadfly, Compose; load_gist("4530920")
 
 The simplest way to investigate the maximum or minimum value of a function over a closed interval is to just graph it and look. 
 
-We begin with the question of which rectangles of perimeter 20 have the largest area? The basic mathematical approach is to find a function of a single variable to maximize or minimize. In this case we have two variables describing a rectangle a base, $b$ and height $h$. Our formulas are:
-
-$$
-P = 20 = 2b + 2h, \quad A = bh.
-$$
-
+We begin with the question of which rectangles of perimeter 20 have the largest area? The figure shows a few different rectangles with this perimeter and their respective areas.
 
 ```{r echo=FALSE}
 plot.new()
@@ -76,22 +71,29 @@ draw_box = function(x, lty=x) {
 invisible(sapply(c(2,3,5,7), draw_box))
 ```
 
+The basic mathematical approach is to find a function of a single variable to maximize or minimize. In this case we have two variables describing a rectangle a base, $b$ and height $h$. Our formulas are:
+
+$$
+P = 20 = 2b + 2h, \quad A = bh.
+$$
+
 
 We see that $b$ can be no bigger than 10 and no smaller than 0 from
 the restriction put in place through the perimeter. Solving for $h$ in
-terms of $b$ then yields this translation:
+terms of $b$ then yields this restatement of the problem:
 
 Maximize $A(b) = b \cdot (10 - b)$ over the interval $[0,10]$.
 
-Just the right form to apply our theorem. Rather than take a
+This is exactly the form needed to apply our theorem about the
+existence of extrema. Rather than solve analytically by taking a
 derivative, we simply graph to find the value:
 
 ```j
 A(b) = b * (10 - b)
-plot(A, 0, 10) | orender
+plot(A, 0, 10)
 ```
 
-You should see the maximum occurs at $b=5$ by symmetry and the maximum
+You should see the maximum occurs at $b=5$ by symmetry, so $h=5$ as well, and the maximum
 area is then 25. This gives the satisfying answer that among all
 rectangles of fixed perimeter, that with the largest area is a square.
 
@@ -147,15 +149,15 @@ A(x) = x * (20 - x - pi*(x/2))/2 + pi*(x/2)^2/2
 ```
 
 The limits are found from the perimeter equation when either $x=0$ or
-when $y=0$ (which is at $x=20/(1+pi/2)$), so we have to find an
+when $y=0$ (which is at $x=20/(1+\pi/2)$). This leaves to find an
 absolute maximum of a continuous function over the closed interval
-$[0, 20/(1+\pi/2)]$.
+$[0, 20/(1+\pi/2)]$. Again, our theorem tells us this maximum must occur.
 
-We begin by simply graphing and reading the values of the maximum and
+We begin by simply graphing and estimating the values of the maximum and
 where it occurs.
 
 ```j
-plot(A, 0, 20/(1+pi/2)) | orender
+plot(A, 0, 20/(1+pi/2))
 ```
 
 The naked eye sees that maximum value is somewhere around 27 and
@@ -168,7 +170,7 @@ As reading the maximum from the graph is more difficult than reading a
 derivative.
 
 ```j
-plot(D(A), 5.5, 5.7) | orender
+plot(D(A), 5.5, 5.7) 
 ```
 
 We see that the critical point is around 5.6.
@@ -231,11 +233,15 @@ text(x1, 12 - .5 - 4/5*x1, expression(l[2]))
 
 We approach this problem in reverse. It is easy to see when a ladder
 is too long. It gets stuck at some angle $\theta$. So for each
-$\theta$ we find that ladder length that is just too long. If a ladder
-is less than the minimum of all of these, then it won't get stuck.
+$\theta$ we find that ladder length that is just too long. Then we
+find the minimum length of all these ladders that are too long. If a
+ladder is this length or more it will get stuck for some
+angle. However, if it is less than this length it will not get stuck.
+So to maximize a ladder length, we minimize a different function. Neat.
 
-To find the length $l = l_1 + l_2$ as a function of $\theta$ we need
-to brush off our trigonometry, in particular right triangle
+Now, to find the length $l = l_1 + l_2$ as a function of $\theta$.
+
+We need to brush off our trigonometry, in particular right triangle
 trigonometry. We see from the figure that $l_1$ is the hypotenuse of a
 right triangle with opposite side $8$ and $l_2$ is the hypotenuse of a
 right triangle with adjacent side $5$. So, $8/l_1 = \sin\theta$ and
@@ -248,14 +254,16 @@ $$
 l(\theta) = \frac{8}{\sin\theta} + \frac{5}{\cos\theta}.
 $$
 
-and we wish to minimize this function for all angles between $0$ and $\pi/2$.
+Our goal is to minimize this function for all angles between $0$ and $\pi/2$.
 
-This not a continuous function on a closed interval -- it is undefined at the endpoints. That being said, a quick plot will convince us that the minimum occurs at a critical point:
+This not a continuous function on a closed interval -- it is undefined
+at the endpoints. That being said, a quick plot will convince us that
+the minimum occurs at a critical point and there is only one critical point in $(0, \pi/2)$.
 
 ```j
 l(t) = 8/sin(t) + 5/cos(t)
 delta = 0.1
-plot(l, 0 + delta, pi/2 - delta) | orender
+plot(l, 0 + delta, pi/2 - delta)
 ```
 
 The minimum occurs near $0.8$. We use Newton's method to refine this guess:
@@ -270,7 +278,7 @@ ladder less than this length can get around the hallway.
 
 `r I(nav$add("Minimize surface area of a can", ""))`
 
-A 12oz can of some soft drink is 355ml which is 455 cubic centimeters. A can to hold this amount is produced in the shape of cylinder with radios $r$ and height $h$. The materials involved give the surface area, which would be:
+A 12oz can of some soft drink is 355ml which is 355 cubic centimeters. A can to hold this amount is produced in the shape of cylinder with radios $r$ and height $h$. The materials involved give the surface area, which would be:
 
 $$
 SA = h \cdot 2\pi r + 2 \cdot \pi r^2
@@ -279,7 +287,7 @@ $$
 The volume satisfies:
 
 $$
-V = 455 = h \cdot \pi r^2
+V = 355 = h \cdot \pi r^2
 $$
 
 Find the values of $r$ and $h$ which minimize the surface area.
@@ -288,7 +296,7 @@ Find the values of $r$ and $h$ which minimize the surface area.
 Okay, we start like (like most all of these problems) expressing the function to minimize in terms of one variable. In this case, we easily solve for $h$ from the equation for the volume to get:
 
 $$
-SA = \frac{455}{\pi r^2} \cdot 2\pi r + 2 \cdot \pi r^2
+SA = \frac{355}{\pi r^2} \cdot 2\pi r + 2 \cdot \pi r^2
 $$
 
 Which we minimize subject to the constraint that $r \geq 0$. 
@@ -296,8 +304,8 @@ Which we minimize subject to the constraint that $r \geq 0$.
 We start by making a graph, making an educated guess that the answer is somewhere near a real life answer, or around 3-5 cms in radius:
 
 ```j
-SA(r) = 455/(pi*r^2)*2*pi*r + 2 * pi * r^2
-plot(SA, 2, 10) | orender
+SA(r) = 355/(pi*r^2)*2*pi*r + 2 * pi * r^2
+plot(SA, 2, 10)
 ```
 
 The minimum looks to be around 4cm. We can use Newton's method to zero in on the answer:
@@ -306,10 +314,10 @@ The minimum looks to be around 4cm. We can use Newton's method to zero in on the
 (r0, ctr) = nm(SA', SA'', 4)
 ```
 
-Okay, 4.16 is our computation for $r$. To get $h$, we have:
+Okay, 4.16 is our computation for $r$. To get $h$, we use:
 
 ```j
-h = 455/(pi*r0^2)
+355/(pi*r0^2) ## h
 ```
 
 
@@ -348,13 +356,13 @@ Let's plot $T(x)$ over the interval $(0,10)$ and look:
 
 ```j
 T(x) = x/30 + sqrt(5^2 + (10-x)^2)/10
-plot(T, 0, 10) | orender
+plot(T, 0, 10) 
 ```
 
 The minimum happens way out near 8. We zoom in a bit:
 
 ```j
-plot(T, 7, 9) | orender
+plot(T, 7, 9) 
 ```
 
 It appears to be around 8.3. We now use Newton's method to refine our
@@ -368,7 +376,7 @@ Okay, got it. Around 8.23. So is `T(x)` = `j T(x)` our minimum time?
 
 
 `r I(nav$add("Infinite domains", ""))`
-Maximize the function $xe^{-x^2}$ over the interval $[0, \infty)$.
+Maximize the function $xe^{-(1/2) x^2}$ over the interval $[0, \infty)$.
 
 Here the extreme value theorem doesn't technically apply, as we don't
 have a closed interval. However, if we can eliminate the endpoints as
@@ -381,19 +389,19 @@ So to approach this problem we first graph it over a wide interval.
 
 ```j
 f(x) = x * exp(-x^2)
-plot(f, 0, 100) | orender
+plot(f, 0, 100) 
 ```
 
 Clearly the action is nearer to 1 than 100. We try graphing the derivative near that area:
 
 ```j
-plot(D(f), 0, 5) | orender
+plot(D(f), 0, 5) 
 ```
 
 This shows the value near $0.7$. We use Newton's method starting there:
 
 ```j
-x, ctr = nm(D(f), D(f), 0.7)
+x, ctr = nm(D(f), D2(f), 0.7)
 ```
 
 The convergence is quick. The maximum is at `f(x) =` `j f(x)`.
@@ -502,12 +510,20 @@ f(.4, g(.4))
 This is essentially `L=` `j L`, which should be the case for any
 choice of $x$ when we have convergence for $g$. Try it yourself.
 
-Now we have a function $y=g(x)$. This is what we minimize to find the
+Now we have a function $y=g(x)$. We graph to see that indeed we have a minimum value:
+
+```j
+plot(g, 0, 1)
+```
+
+
+
+Okay, now to find it. This is what we minimize to find the
 resting position of the ring. Again, we turn to Newton's method, but
 for minimization we use $g'$ and $g''$:
 
 ```j
-(x, ctr) = nm(g', g'', .5) ## .5 in middle between 0 and a=1
+(x, ctr) = nm(g', g'', .5) ## .5 from the graph
 ```
 
 The point where the ring rests is:
@@ -516,12 +532,12 @@ The point where the ring rests is:
 (x, g(x)) 
 ```
 
-If you watch the video, you will see that the surprising fact here is
+If you watch the video linked to above, you will see that the surprising fact here is
 the resting point is such that the angles formed by the rope are the
 same. Basically this makes the tension in both parts of the rope
 equal, so there is a static position (if not static, the ring would
 move and not end in the final position). We can verify this fact
-numerically, as follows:
+numerically by showing the arctangents of the two triangles are the same:
 
 ```j
 y = g(x); atan(abs(y)/x) - atan((b-y)/(a-x))
@@ -555,9 +571,9 @@ stop when the domain we are looking over is small.
 
 So to implement this we need three things:
 
-* a means to pick the candidate point
-* a function to give us the new triple
-* a loop to repeat until we are within tolerance.
+* a means to pick the candidate point (`pick_point`)
+* a function to give us the new triple (`update_triple`)
+* a loop to repeat until we are within tolerance. (`while x3 - x1 > tol`)
 
 With this, here we go:
 
@@ -568,7 +584,7 @@ function golden_section(f::Function, x1, x2, x3)
     tol = sqrt(eps())
     a = 2 - (1 + sqrt(5))/2 ## 2 - golden ratio
     
-    ## pick point in bigger of two subintervals return point and indicate which side
+    ## pick point in bigger of two subintervals return point and indicate if left side
     pick_point(x1,x2,x3) = x2 - x1 > x3 - x2 ? (x2 - a*(x2-x1), true) : (x2 + a*(x3-x2), false)
 
     ## update triple if point is new max or not. 
@@ -601,17 +617,39 @@ f(x) = x^2 * (1-x)^10
 golden_section(f, 0, .5, 1)
 ```
 
+It appears the maximum occurs at $1/6$.
 
+### finding the median -- with calculus
 
-Here is an example where Newton's method will fail as the function is not differentiable everywhere. You can find the median of the 5 numbers 1, 3, 6, 7, 8 by either sorting and picking the middle one -- or through calculus. Your choice now. If you want to use calculus, the median will minimize this function:
+Here is an example where Newton's method will fail as the function is
+not differentiable everywhere. You can find the median of the 5
+numbers 1, 3, 6, 7, 8 by either sorting and picking the middle one --
+or through calculus. Your choice now. If you want to use calculus, the
+median will minimize this function:
 
 ```j
 f(x) = abs(x - 1) + abs(x - 3) + abs(x - 6) +abs(x - 7) + abs(x - 8) 
 ```
 
-(You might better define this using an array and `sum` noting this is $\sum \mid x - x_i\mid$.)
+(Alternatively, ou might better define this through a comprehension:
 
-We have a method to maximize a function -- not minimize, so we will apply the golden section algorithm to $g(x) = - f(x)$. The median measures center so must be between 1 and 8. For a guess, we will start with 3:
+```j
+vals = [1, 3, 6, 7, 8]; f(x) = sum( [abs(x-i) for i in vals] )
+```
+
+A graph will show why the median is argmin:
+
+```j
+plot(f, min(vals), max(vals))
+```
+
+
+
+Now, we just discussed a method to _maximize_ a function -- not
+)minimize_ one. What do do? Flip the function upside down of
+course. That is apply the golden section algorithm to $g(x) = -
+f(x)$. The median measures center so must be between 1 and 8. For a
+guess, we will start with 3:
 
 ```j
 g(x) = -f(x)
