@@ -1,9 +1,9 @@
 ## create the projects
 
-using TeachersHelpers, Gadfly, Compose, KnitJ
+using TeachersHelpers, Gadfly, Compose, KnitJ;  #require_gist("4530920")
 
 projects = ["projects.jmd", "calculator.jmd", "functions.jmd", "graphing.jmd", "zeroes.jmd",
-            "limits.jmd", "derivatives.jmd", "newton.jmd", "extrema.jmd", "integration.jmd"]
+            "limits.jmd", "derivatives.jmd", "newton.jmd", "extrema.jmd", "integration.jmd", "symbolic.jmd"]
 wd = expanduser("~/pmg/JuliaNotes/Tutorial.Rmd")
 
 function run_project(p)

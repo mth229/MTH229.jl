@@ -81,6 +81,11 @@ A project on minimization and maximization. Some standard applied problems plus 
 
 Basics of integration including rectangle, trapezoid, simpson and brief adaptive quadrature.
 
+
+<i class="icon-certificate"></i> http://wiener.math.csi.cuny.edu/verzani/tmp/julia/symbolic.html
+
+How to do some symbolic math in `julia` through `yacas`
+
 <!--- Finish this off -->
 `r I(nav$write_footer())`
 `r I(page$write_footer())`

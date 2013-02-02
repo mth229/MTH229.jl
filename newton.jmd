@@ -211,7 +211,7 @@ proposed the general form, hence the usual name of Newton-Raphson method.
 <hr />
 `r I(page$new_problem("Try it yourself..."))`
 
-Using Newton's method to find $\sqrt{k}$ (by solving $f(x) = k$) is
+Using Newton's method to find $\sqrt{k}$ (by solving for roots of $f(x) = x^2 - k$) is
 also referred to as the Babylonian method, due to its origins. The resulting method
 
 $$
@@ -532,7 +532,7 @@ Newton's method to $f'$ -- not $f$. This requires us to pass the first
 and second derivatives of $f$ to our `nm` function:
 
 ```j
-(x, ctr) = nm(D(f), D2(f), 0)
+(x, ctr) = nm(D(f), D2(f), 4)
 ```
 
 
@@ -735,7 +735,7 @@ x = x - f(x)/fp(x)  ## differ at 1e-9
 x = x - f(x)/fp(x)  ## differ at 1e-15
 ```
 
-So essentially with a good guess, the convergence is very fast.
+So essentially with a good guess, the convergence is very fast and more or less the exponent doubles in each iteration.
 
 ### Questions
 
@@ -782,7 +782,49 @@ cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
 
 
 
-`r I(page$new_problem("speed ..."))`
+`r I(page$new_problem("Faster than quadratic"))`
+
+The computation of $\pi$ to high precision can be done by solving the
+equation $\sin(x) = 0$ near the answer $\pi$. The convergence of
+Newton's method is fast and in fact is even faster than quadratic
+because the third derivative of $\sin(x)$ is 0.
+
+To compare, look at the accuracy of finding $\sqrt{2}$ using Newtons
+method by looking at the logarithm of the error (to find the
+exponent):
+
+```j
+x = 2;                 -log10(abs(sqrt(2) - x))
+x = x - (x^2 -2)/(2x); -log10(abs(sqrt(2) - x))
+x = x - (x^2 -2)/(2x); -log10(abs(sqrt(2) - x))
+x = x - (x^2 -2)/(2x); -log10(abs(sqrt(2) - x))
+x = x - (x^2 -2)/(2x); -log10(abs(sqrt(2) - x))
+```
+
+Basically the exponent doubles until it can't. (The maximum exponent
+in the difference is `-log10(eps(pi)) =` `j -log10(eps(pi))`, so
+doubling $11$ would be $22$ which is too precise.)
+
+What happens when you use `x=3` and `x = x - sin(x)/cos(x)`?
+
+
+
+```{r echo=FALSE, results="asis"}
+choices <- c("The exponent increments by 1",
+	     "The exponent basically doubles",
+	     "The exponent basically triples"
+	     )
+ans <- 3
+cat(page$radio_choice(choices, choices[ans],  inline=FALSE))
+```
+
+
+
+
+
+
+
+
 `r I(page$new_problem("speed ..."))`
 
 

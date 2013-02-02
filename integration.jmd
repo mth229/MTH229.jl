@@ -83,18 +83,64 @@ include:
 * Computing the values $f(x_i^*)(x_{i+1} - x_i)$ for each $i$
 * adding these values up
 
-If we pick the left Riemann sum we can do this easily enough with the
-following sequence of commands. We pick $a=1$ and $b=3$ and integrate
-the function $x^2$. In the following we use an equal-sized partition
-giving $n=10$ rectangles.
+
+In previous projects we used ranges to make evenly spaced values. If
+we partition $[a,b]$ into $n$ same sized rectangles, then each has
+base $\delta = (b-a)/n$ and the points are separated by this
+amount. As such, we can choose our $x_0, x_1, \dots, x_n$ with a commands
+like:
+
+```j
+a = 1; b=3; n=10
+delta = (b-a)/n
+x = a + (0:n)*delta
+```
+
+Further, to apply a function to a range of values, we can use either `map` or a comprehension. For example:
+
+```j
+f(x) = x^2
+fx = map(f, x) ## or use [f(x) for x in x]
+```
+
+Then to add all these values we can do it the harder way with a for loop:
+
+```j
+tot = 0
+for i in fx
+    tot = tot + 1
+end
+```
+
+Or use the function `sum` to do this for us:
+
+```j
+sum(fx)
+```
+
+Okay, just one subtlety, we really only want the points
+
+```j
+a + 0:(n-1)*delta
+```
+
+for the left Riemann sum and the points 
+
+```j
+a + 1:n *delta
+```
+
+for the right.
+
+Putting this together, here are commands to approximate the area under the curve $f(x)=x^2$ using 10 left Riemann sums:
 
 ```j
 f(x) = x^2
 a = 1; b = 3; n = 10
 delta = (b - a)/n
-x = linspace(float(a), b, n + 1) ## or a + (0:n)*delta 
-fxi = map(f, x[1:n])  ## right is 2:(n+1)
-sum(fxi * delta)
+x = a + (0:n)*delta   ## n + 1 points, n rectangles
+fx = map(f, x[1:n])  ## right is 2:(n+1)
+sum(fx) * delta
 ```
 
 We compare this value to the known value from the FTC, as $F(x) = x^3/3$ is an antiderivative:
@@ -186,7 +232,9 @@ Here we write a function to do the integration. This needs the basic inputs of
 * the interval's start and end value, and 
 * the number of equal-sized subintervals.
 
-In addition, we allow for the possibility of passing in a function to compute the approximate area for a given subinterval. We give a default value where the left-hand endpoint is chosen.
+In addition, we allow for the possibility of passing in a function to
+compute the approximate area for a given subinterval. We give a
+default value where the left-hand endpoint is chosen.
 
 In this function, instead of working in a vectorized manner with
 `map`, we opt to use a `for` loop to accumulate the area, as that
@@ -203,7 +251,8 @@ using TeachersHelpers; require_gist("4530920")
 ```j
 function integrate(f::Function, a::Real, b::Real, n::Integer, approx_area::Function)
 
-   x = linspace(float(a), b, n+1) ## n + 1 points for n subintervals
+   delta = (b-a)/n
+   x = a + (0:n)*delta
 
    ## Use a for loop to add up the approximate areas for the x partition
    tot = 0
@@ -296,6 +345,9 @@ Since these are also the minimum and maximum Riemann sums, the above gives a bou
 
 
 `r I(page$new_problem("question..."))`
+
+Define the midpoint f((a+b)/2) ...
+
 
 `r I(page$new_problem("question..."))`
 
@@ -712,10 +764,16 @@ picture.) With this replacing $f'(x)$ do you get the same answer?
 
 `r I(nav$add("Trapezoid and Simpson's rule"))`
 
-The basic left or right Riemann sum will converge, but the convergence is really slow. Not that it matters when doing just one of these, but it can if we are doing many, such as is the case in real life. There are many speed ups, we mention a few basic ones next.
+The basic left or right Riemann sum will converge, but the convergence
+is really slow. Not that it matters when doing just one of these, but
+it can if we are doing many, such as is the case in real life. There
+are many speed ups and alternatives, we mention a few basic ones next
+starting with the trapezoid and Simposon's rule.
 
 
-The trapezoid rule simply replaces the approximation of the area in a subinterval by a trapezoid, as opposed to a rectangle. Easy enough, we can write our approximation function with:
+The trapezoid rule simply replaces the approximation of the area in a
+subinterval by a trapezoid, as opposed to a rectangle. Easy enough, we
+can write our approximation function with:
 
 ```j
 trapezoid(f::Function, a::Real, b::Real) = (1/2)*(f(a) + f(b))*(b-a)
@@ -743,7 +801,15 @@ One can see that the errors are much smaller for the trapezoid method.
 
 ### Simpson's rule
 
-The trapezoid rule can be viewed as a simple linear approximation to the function $f(x)$ over the subinterval $[a, b]$. That is, replace the function with the secant line between these two values and integrate the replacement. With this viewpoint, it is possible that other easy-to-integrate function approximations will lead to improved approximate integrals. Simpson's method can be viewed in just this way. It replaces $f$ by the parabola going through $(a, f(a))$, $(c, f( c))$ and $(b, f(b))$ where $c=(a+b)/2$ is the midpoint between $a$ and $b$. The resulting area after this approximation is:
+The trapezoid rule can be viewed as a simple linear approximation to
+the function $f(x)$ over the subinterval $[a, b]$. That is, replace
+the function with the secant line between these two values and
+integrate the replacement. With this viewpoint, it is possible that
+other easy-to-integrate function approximations will lead to improved
+approximate integrals. Simpson's method can be viewed in just this
+way. It replaces $f$ by the parabola going through $(a, f(a))$, $(c,
+f( c))$ and $(b, f(b))$ where $c=(a+b)/2$ is the midpoint between $a$
+and $b$. The resulting area after this approximation is:
 
 ```j
 simpsons(f::Function, a::Real, b::Real) = (f(a) + 4f((a+b)/2) + f(b))*(b-a)/6
@@ -756,7 +822,11 @@ simpsons_r = [1 - integrate(f, 0, 1, n, simpsons) for n in n_values]
 [n_values float(left_r)  float(trapezoid_r) float(simpsons_r)]
 ```
 
-As can be seen, for this  function approximating with a parabola is much quicker to converge. That is, $n$ can be smaller yet the same accuracy is maintained. (Of course, there are more computations involved for each, so the number of operations needed may or may not be fewer, that would require some analysis.)
+As can be seen, for this function approximating with a parabola is
+much quicker to converge. That is, $n$ can be smaller yet the same
+accuracy is maintained. (Of course, there are more computations
+involved for each, so the number of operations needed may or may not
+be fewer, that would require some analysis.)
 
 ### error
 One can show that the error is bounded by
@@ -787,36 +857,40 @@ By contrast, the error for the trapezoid method will be like $n^{-2}$ and the le
 One can rearrange the trapezoid rule to become:
 
 $$
-\delta f(x_1) + 2\delta f(x_2) + 2 \delta f(x_3) + \cdots + 2 \delta f(x_{n}) + \delta f(x_{n+1})
+\delta f(x_0) + 2\delta f(x_2) + 2 \delta f(x_3) + \cdots + 2 \delta f(x_{n}) + \delta f(x_{n})
 $$
 
-where $\delta = (b-a)/n$. This has a general form of
+where $\delta = (b-a)/n$. 
+
+And Simpson's rule (for even $n$) to be
+
+
+
+$$
+\delta f(x_0) + 4\delta f(x_1) + 2 \delta f(x_2) + \cdots +  4 \delta f(x_{n-2}) + 2 \delta f(x_{n-1}) + \delta f(x_{n})
+$$
+
+with $\delta = (b-a)/n \cdot (1/6)$.
+
+These both have the general form of
 
 $$
 \sum_k w_k f(x_k)
 $$
 
-where $w_k$ are weights. So, an alternative way to do the trapezoid formula for $n=4$ might be:
+where $w_k$ are weights and the $x_k$ some choice of points -- not
+necessarily evenly spaced, though that is so in the examples we've
+seen. So, an alternative way to do the trapezoid formula in `julia`
+for $n=4$ might be:
 
 ```j
-a = 0; b = 1; n = 4
+a = 0; b = 1; n = 4; delta = (b-a)/n
 f(x) = x^2
-delta = (b-a)/n
 w = delta * [1, 2, 2, 2, 1] ## delta * [1, repeat([2],n-1), 1]'
-x = a + [1:n+1] * delta
-fk = map(f, x)
-sum(w .* fk)   ## sum(w .* map(f, x)) showing all three at once are important. Note .* is needed
+x = a + (0:n) * delta
+sum(w .* map(f, x))         ## note .* has the leading dot
 ```
 
-There are similar weights that can be computed for the other rules
-(left, right, Simpsons). For example, The Simpson weights for even $k$
-are:
-
-$$
-\delta * \{1, 4, 2, 4, 2, 4, 2, \dots, 4, 2, 1\}
-$$
-
-with $\delta = (b-a)/(6n)$.
 
 The compact code to compute the approximate integral, `sum(w .* map(f, x)`, shows there are
 three important things in this form of the integral: the weights, the
@@ -827,12 +901,12 @@ case.
 
 The Gauss nodes and weights are computable
 (http://en.wikipedia.org/wiki/Gaussian_quadrature). The code is in the
-gist. The main tools are the Legendre polynomials, which can be
+gist. The main tools are the so-called Legendre polynomials, which can be
 defined recursively with Bonnet's formula:
 
 $$
 P_0(x) = 1; P_1(x) = x; \quad  n P_{n}(x)  = (2(n-1)+1) x P_{n-1}(x) -(n-1) P_{n-2}(x).
-##
+$$
 
 Using `julia`'s `Polynomial` class this can be
 implemented almost verbatim:
@@ -853,23 +927,43 @@ This is used as,
 p4 = lgp(4)
 ```
 
-The term _recursion_ is applied to a function  when it makes a reference to itself during a computation. With this function,
-don't try it with  values much bigger than $20$, as the recursion can take a long time.
+The term _recursion_ is applied to a function when it makes a
+reference to itself during a computation. With this function, don't
+try it with values much bigger than $20$, as the recursion can take a
+long time.
 
-The nodes are the roots of the right polynomial. Here we have the values for `p4`
+The nodes are the roots of the right polynomial. Here we have the
+values for `p4`
+
 ```j
-roots(p4)
+xk = roots(p4)
 ```
 
-The weights are just a bit more involved, so we don't show how to
-compute the. Rather, both the weights and the nodes are returned by
-the function `gauss_weights`, which is used like:
+Finally, the weights  involve the derivative of $P_n$ through:
+
+$$
+w_i = \frac{2}{(1 - x_i^2) \cdot(P^{'}_n(x_i)/P_n(1))^2}
+$$
+
+These can be done simply with:
+
+```j
+P =  p4 /polyval(p4, 1) ## normalize p4 so it is 1 at 1.
+weights(x) = 2 / (1 - x^2) / (polyval(D(P), x))^2
+map(weights, xk)
+```
+
+Both the weights and the nodes are returned by
+our function `gauss_weights`, which is used like:
 
 ```j
 w, x = gauss_weights(4); [w x]
 ```
 
-From here `gauss_quadrature` will do the integration of `f` over the interval $[-1,1]$, though we can do it ourself quickly enough. Here we compute the integral of $\cos(\pi/2 x)$ over $[-1,1]$ (you can check this is very close to the answer $4/\pi$ even with just 4 nodes):
+From here `gauss_quadrature` will do the integration of `f` over the
+interval $[-1,1]$, though we can do it ourself quickly enough. Here we
+compute the integral of $\cos(\pi/2 x)$ over $[-1,1]$ (you can check
+this is very close to the answer $4/\pi$ even with just 4 nodes):
 
 ```j
 f(x) = cos(pi/2*x)
