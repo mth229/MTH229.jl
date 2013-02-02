@@ -1,0 +1,446 @@
+``` {r echo=FALSE, results="asis"}
+## process with knitr:::knit2html("filename.Rmd")
+## Nothing to see here ... move along
+require("questionr", quietly=TRUE)
+page <- questionr:::Page$new()
+nav <- questionr:::NavBar$new()
+cat(page$write_header())
+```
+`r I(nav$write_header("Symbolic math", "with julia"))`
+
+The `julia` language bills itself as "fresh approach to technical
+computing." By saying "fresh" the implication is that there exists
+many older approaches to technical computing. Indeed there are. For
+mathematical areas there are two different philosophies for computing:
+symbolic and numeric. The former are the domain of Computer Algebra
+Systems (CAS), and exemplified by very comprehensive programs like
+`Mathematica`, `Maple` and the open-source alternative `Sage`.  The
+latter is the domain of `MATLAB`, `R`, and others. The `julia`
+language is an alternative approach for numerical computation.
+
+The `Jyacas` package for `julia` provides some symbolic capabilities,
+by being an interface between `julia` and `yacas`, an open-source
+CAS. Here we investigate some of what can be done from `Jyacas` for
+calculus-like computations, which by comparison to the full power of a
+typical CAS is not much, but for our purposes will suffice to give an
+introduction.
+
+The `Jyacas` package is an add on. If not already installed, one can
+install it through the command
+
+```
+Pkg.add("Jyacas")
+```
+
+For Windows uses this will install the `yacas` program as well. For
+Unix and Mac OS X users, one must install it separately. (If doing so, the server-mode must be enabled.)
+
+Once added, one initiates a `yacas` session through the following:
+
+```
+using Jyacas
+jacas()
+```
+
+The last command has some options. As given, it will start `yacas` and have it listen in the default manner.
+
+
+
+
+`r I(nav$add("About"))`
+
+The `Jyacas` program extends `julia` by providing a type for _symbolic expressions_. Such an expression is encapsulated by a symbolic variable `x` instantiated through:
+
+```j
+x = Sym("x")
+```
+
+The "x" on the right-hand side is a character argument to the `Sym` constructor which returns a symbolic object stored as `x`:
+
+```j
+typeof(x)
+```
+
+That was painless. While we are here, lets define symbolic objects `h` and `y`, here using the alternate specification of a "symbol" in `julia':
+
+```j
+h, y = Sym(:h, :y)
+```
+
+Most of the typical math functions have been overloaded to work with these symbolic expressions: the functions accept a symbolic expression and return one. For example:
+
+```j
+typeof(x^2 - 2x + 2)
+```
+
+And working with functions:
+
+```j
+f(x) = exp(-x^2/2)             ## a julia function
+f(x)                           ## takes a symbolic object and returns a new one
+```
+
+This shows that function object `f` will map a symbolic object to another symbolic object. (We also see in the output, that the `exp` function in `julia` becomes `Exp` in `yacas`.)
+
+In `yacas`, the `Where` function allows you to evaluate a symbolic expression for a given value. For example,
+
+```j
+Where(f(x), {"x" => 1})
+```
+
+This syntax is a bit bulky, and can be replaced with:
+
+```j
+out = Where(f(x), x == 1)
+```
+
+Or even in a pipeline:
+
+```j
+f(x) | Where(x == 1)
+```
+
+(Note the regular use of `==` is a test for equality, for symbolic expressions it is used in this different manner.)
+
+This is still a symbolic object, to get a numeric object in `yacas` we call the `N` function, with an optional number of digits:
+
+```j
+tmp = N(out, 10); (tmp, typeof(tmp))
+```
+
+Finally, this is still symbolic, in that the result has not been
+transported back to `julia`. To coerce it into a `julia` value, the
+`to_julia` function is provided:
+
+```j
+N(out, 10) | to_julia
+```
+
+That all gets bulky to read and type, even if written as:
+
+```j
+f(x) | Where(x== 1) | N | to_julia
+```
+
+The function `symval` will shorten this, as
+```j
+symval(f(x), x, 1)
+```
+
+Or since, `x` is the default symbol to substitute for, we could have done just:
+
+```j
+symval(f(x), 1)
+```
+
+
+For the most part, one can work with Symbolic expressions without pulling them back into `julia` expressions until needed.
+
+
+
+
+`r I(nav$add("Solving equations"))`
+
+We can now see how to use symbolic expressions.
+
+The `Solve` command can be used to solve equations. These can be
+specified most simply through a simple expression which will be solved
+for 0. For example, here are the roots of $x^2 + x -1$:
+
+```j
+Solve(x^2 + x - 1)
+```
+
+By default, `Solve` will solve the expression equal to 0 in the
+variable `x`. Changes to this are possible. For example, to solve the
+same equation written as $x^2 + x = 1$, we could have specified:
+
+```j
+Solve(x^2 + x == 1)
+```
+
+For symbolic expressions, the `==` operator, normally a test for equality, is overridden to provide the usage more common in an equation. To solve an expression in another variable, we specify it through a second argument:
+
+```j
+Solve(x^2 + y^2 == 1, y)
+```
+
+As you can see, the resulting expression is not a simplified as you might do it,
+
+What can be done with these answers? They are still symbolic expressions. 
+
+We can use the `Where` function to evaluate expressions for a given value. For example, if we set $x=.5$, then we can get the values of `y` that were found with:
+
+```j
+a = Solve(x^2 + y^2 == 1, y); Where(a, 0.5)
+```
+
+
+The result of `Where` is symbolic. To get a numeric value within
+`yacas` we can put this into a chain of commands (with the middle
+anonymous function definition illustrating how we can get fewer digits
+shown than the default amount):
+
+```j
+Where(a, 0.5) | (u -> N(u, 2)) | to_julia 
+```
+
+But, such solutions can be handy as symbolic expressions. For example,
+let's put the solutions for $y$, back into an expression, simplify
+the output then print it nicely:
+
+```j
+Where(y^2 , a) | Simplify | PrettyForm 
+```	   
+
+(Why $-4/4$ is not given as $-1$ and the whole thing written as $1-x^2$ we'll leave to `yacas`.
+
+
+`r I(nav$add("Graphing expressions"))`
+
+Plotting symbolic expressions can be done directly without bringing
+them back into `julia`. For example, here we plot the function $f(x) =
+\sin(x^4) - \cos(x^4)$ over $[0,1]$:
+
+```j
+f(x) = sin(x^4) - cos(x^4)
+Plot(f(x), 0, 1)
+```
+
+This is very similar to how we can plot a function object, `f`, with
+`Gadfly` using `plot` (lowercase), but note that `f(x)` is a symbolic
+expression, not a function object:
+
+```j
+(typeof(f(x)), typeof(f))
+```	 	  	      
+
+
+Graphing more than one function at a time is possible. We just specify
+an array of symbolic expressions. For example, to graph a function and
+its tangent line at a point we can do this.
+
+```j
+f(x) = sqrt(x)
+c = 2
+m = 1/(2sqrt(2))  ## or symval(D(f(x)), c)
+Plot([f(x), f(c) + m*(x-c)], 1, 3)
+```
+
+`r I(nav$add("Limits"))`
+
+
+The `Limit` function can find the limit of an expression. Let's see how well it does. The basic question
+
+$$
+\lim_{x \rightarrow c} f(x) = L
+$$
+
+has three inputs: a variable $x$, a value you are going to, $c$, and an expression, or function, you are taking the limit of. The output is the limit, when it exists. The `Limit` function is similar. Here we find an old classic:
+
+```j
+Limit(sin(x)/x, x, 0)
+```
+
+
+We can do other similar questions:
+
+```j
+Limit((1-cos(x))/x^2, x, 0)
+```
+
+Limits can be taken at infinity as well. We specify that value using `Inf`:
+
+```j
+Limit(sin(x)/x, x, Inf)
+```
+
+We can even compute derivatives using limits. Here we do so symbolically:
+
+```j
+h = Sym(:h)
+f(x) = x^10
+Limit( (f(x+h) - f(x))/h, h, 0)
+```
+
+We can see that some of the more complicated formulas for derivatives give the same answer. Here we see the central difference gives and answer, but needs to be simplified:
+
+```j
+central_difference(f, x, h) = ( f(x+h) - f(x-h) ) / (2h)
+a = Limit(central_difference(f, x, h), h, 0)
+```
+
+```j
+Simplify(a)
+```
+
+But this more complicated expression, fails even for the straightforward function:
+
+```j
+central_4th_difference(f, x, h) = (-f(x + 2h) + 8f(x+h) - 8f(x-h) + f(x-2h))/(12h)
+Limit(central_4th_difference(f, x, h), h, 0)
+```
+
+Anyways, the point is that the central fourth difference is very
+useful for numeric _approximations_ to the derivative but in this
+context is just a curiosity to see what `yacas` can handler. Next we
+will see that `yacas` can take derivatives symbolically.
+
+
+
+`r I(nav$add("Derivatives"))`
+
+The above example about plotting the tangent is better done by
+evaluating the derivative of `f` symbolically, then specifying `m`
+directly. The `D` operator takes a symbolic expression, an optional
+variable to differentiate in (the default is `x`) and an optional
+integer for the number of derivatives and returns a symbolic
+derivative.
+
+For example
+
+```j
+f(x) = exp(exp(x - h))
+D(f(x))                  ## not f, but the symbolic expression f(x)
+D(f(x), 2)               ## Finds f''(x), not f'(2).
+```
+
+
+Here we find and plot the derivative of $x^x$:
+
+```j
+f(x) = x^x
+Plot([ f(x), D(f(x)) ], 1/10, 2)
+```
+
+Here we plot $f(x)$ and it's tangent line at $c=1$:
+
+```j
+f(x) = x^x; c = 1
+m = symval(D(f(x)), c)                     ## m is numeric. Could be symbolic with: ( D(f(x)) | Where(x == c) )
+Plot([ f(x), f(c) + m * (x - c)], .5, 1.5)
+```
+
+Were we doing this all day, one could define $f'( c)$ as follows
+
+```j
+import Base.ctranspose
+ctranspose(f::Function) = c -> D(f(Sym(:x))) | Where(Sym(:x) == c)
+```
+
+This gives `f'( c)` as a symbolic object. Then we can plot the
+function and its tangent line using a more familiar notation:
+
+```j
+Plot( [f(x), f(c) + f'(c)*(x-c)], .5, 1.5 )
+```
+
+`r I(nav$add("Extrema"))`
+
+We can combine `Solve` with `D` to find extrema of a differentiable
+function over a closed interval.
+
+For example, consider the problem enclosing the maximum amount of area
+with 3 sides of a rectangle where the length of the 3 sides is fixed.
+
+For this, we have
+
+$$
+L = 2x + y, \quad A = xy, \quad\text{or}\quad A(x) = x \cdot (L-2x)
+$$
+
+We can solve this with $L$ as a symbolic value, by looking at critical
+points of $A$ or when $A'(x) = 0$:
+
+```j
+L = Sym(:L)
+A(x) = x*(L-2x)
+out = Solve(D(A(x)))
+Where(Solve(L == 2x +y, y), out)
+```
+
+So $x = L/4$ and $y = L/2$. (Why we needed to do $L - L/2 = L/2$
+instead of `yacas` we'll leave for another day.)
+
+
+
+
+`r I(nav$add("Integration"))`
+
+The `yacas` program can do symbolic integration, though it is not as
+effective at it, as say `Mathematica`, it can do many things. The
+standard function is `Integrate`.
+
+One can find general antiderivatives:
+
+```j
+x, a = Sym(:x, :a)
+f(x) = cos(x) - sin(x)
+Integrate(f(x))
+```
+
+One can parameterize an integral using a constant:
+
+```j
+Integrate(1/cos(x + a))
+```
+
+Integrate can do the basics:
+
+```j
+Integrate(x^3 * (1-x)^4)
+```
+
+But not in general
+
+```j
+alpha, beta = Sym(:alpha, :beta)
+Integrate(x^alpha * (1-x)^beta)
+```
+
+As seen, not all integrals are possible. For another example, this
+integral $\int \cos(\sin(x)) \cos(x)dx$ is done easily by substitution
+and gives $sin(sin(x)) + C$. However, `yacas` fails here:
+
+```j
+Integrate(cos(sin(x))*(cos(x)) )
+```
+
+(Here is Mathematica's answer via its "alpha" site: http://www.wolframalpha.com/input/?i=integrate+cos%28sin%28x%29%29*cos%28x%29 .)
+
+
+#### Definite integrals
+
+By specifying a range to integrate over, the definite integral
+$\int_a^b f(x) dx$ can be found.
+
+```j
+Integrate(x^2, 0, 1)                                
+```
+
+
+
+
+
+More interestingly, we can find the median value of an integral by
+solving.
+
+```j
+f(x) = 4x^3; b = Sym(:b)
+Solve(Integrate(f(x), 0, b) == 1/2 * Integrate(f(x), 0, 1), b)
+```
+
+Oddly, the conversion by `N` doesn't work well with this example, the
+`MapN` function maps `N` to each element of the `yacas` list and does
+get the answer correct (the third one).
+
+```j
+Solve(Integrate(f(x), 0, b) == 1/2 * Integrate(f(x), 0, 1), b) | MapN
+```
+
+
+
+<!--- Finish this off -->
+`r I(nav$write_footer())`
+`r I(page$write_footer())`
+
