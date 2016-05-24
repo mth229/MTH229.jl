@@ -9,15 +9,15 @@ This module does two things:
 
 The helper functions include:
 
-- `secant(f, a, b)`: return a function giving returning the secant line between $(a,f(a))$ and $(b,f(b))$.
+- `secant(f, a, b)`: return a function giving returning the secant line between ``(a,f(a))`` and ``(b,f(b))``.
 
-- `tangent(f, c)`:  return a function giving returning the tangent line to $f(x)$ at the point $(c,f(c))$.
+- `tangent(f, c)`:  return a function giving returning the tangent line to ``f(x)`` at the point ``(c,f(c))``.
 
-- `bisection(f, a, b)`: A simple implementation of the bisection method. The interval $[a,b]$ should be a bracketing interval. For real use, the `fzero(f, a, b)` function, from the `Roots` package, should be used.
+- `bisection(f, a, b)`: A simple implementation of the bisection method. The interval ``[a,b]`` should be a bracketing interval. For real use, the `fzero(f, a, b)` function, from the `Roots` package, should be used.
 
 - `ctranspose`: This allows the derivative of   a function to be found as with math notation: `f'`. It is an alias to `D(f)` from the Roots package. The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
 
-- `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where $g(x) > 0$ over $[a,b]$. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
+- `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
 
 - `newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)`. A simple function to visualize some `steps` of newton's method. The values of `a` and `b` are optional, but if not set the x-viewing window will be determined by the points the sequence.
 
@@ -90,7 +90,7 @@ end
 """
 plotif(f, g, a, b, args...; kwargs...)
 
-Plot the function `f` over the interval `[a,b]`. Replot the same function in a different color when $g > 0$.
+Plot the function `f` over the interval `[a,b]`. Replot the same function in a different color when ``g > 0``.
 
 Examples
 ```
