@@ -25,12 +25,13 @@ The helper functions include:
 """
 module MTH229
 
-using Plots
-using Roots
-using SymPy
+using Reexport
+@reexport using Plots
+@reexport using Roots
+@reexport using SymPy
 
 
-
+### 
 export tangent, secant
 export plotif, newton_viz, riemann
 
