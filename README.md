@@ -1,5 +1,24 @@
-This is a directory with some project files for MTH 229 with julia
+# MTH229
 
-* The file create_projects.jl has two helper functions to process the files and upload to my tmp website
-* The files are in need of clean up!
-* I need feedback.
+Helper files for using `Julia` with MTH229.
+
+This is installed with
+
+```
+Pkg.clone("https://github.com/mth229/MTH229.jl")
+```
+
+This should also install several other packages we make use of (`Roots`, `Plots`, `SymPy`)
+
+
+To use this package we have:
+
+```
+using MTH229
+```
+
+To find out what is in the package read the help page for the package:
+
+```
+?MTH229
+```
