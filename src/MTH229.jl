@@ -101,7 +101,7 @@ plotif(f, f',  -1, 2.1)   # where f is increasing
 plotif(f, f'', -1, 2.1)   # where f is concave up
 ```
 """
-function plotif(f, g, a, b, args...; kwawrgs...)
+function plotif(f, g, a, b, args...; kwargs...)
   plot([f, x -> g(x) > 0.0 ? f(x) : NaN], a, b, args...; linewidth=5, kwargs...)
 end
 
