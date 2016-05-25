@@ -33,7 +33,7 @@ using Reexport
 
 ### 
 export tangent, secant
-export plotif, newton_viz, riemann
+export plotif, newton_vis, riemann
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.ctranspose(f::Function) = D(f)
@@ -46,7 +46,7 @@ tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 """
 secant
 """
-secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / b-a * (x - a)
+secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / (b-a) * (x - a)
 
 """
 
