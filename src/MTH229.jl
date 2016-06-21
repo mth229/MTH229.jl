@@ -9,9 +9,9 @@ This module does two things:
 
 The helper functions include:
 
-- `secant(f, a, b)`: return a function giving returning the secant line between ``(a,f(a))`` and ``(b,f(b))``.
+- `secant(f, a, b)`: return a function giving the secant line between ``(a,f(a))`` and ``(b,f(b))``.
 
-- `tangent(f, c)`:  return a function giving returning the tangent line to ``f(x)`` at the point ``(c,f(c))``.
+- `tangent(f, c)`:  return a function giving the tangent line to ``f(x)`` at the point ``(c,f(c))``.
 
 - `bisection(f, a, b)`: A simple implementation of the bisection method. The interval ``[a,b]`` should be a bracketing interval. For real use, the `fzero(f, a, b)` function, from the `Roots` package, should be used.
 
@@ -19,7 +19,6 @@ The helper functions include:
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
 
-- `newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)`. A simple function to visualize some `steps` of newton's method. The values of `a` and `b` are optional, but if not set the x-viewing window will be determined by the points the sequence.
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 """
@@ -33,7 +32,7 @@ using Reexport
 
 ### 
 export tangent, secant
-export plotif, newton_vis, riemann
+export plotif, riemann
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.ctranspose(f::Function) = D(f)
@@ -102,38 +101,11 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 ```
 """
 function plotif(f, g, a, b, args...; kwargs...)
-  plot([f, x -> g(x) > 0.0 ? f(x) : NaN], a, b, args...; linewidth=5, kwargs...)
+    p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
+    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN; linewidth=5)
+    p
 end
 
-
-"""
-newton_viz
-
-Simple visualization of Newton's method
-
-```
-f(x) = log(x) - 1/10
-newton_vis(f, 1)
-"""
-function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
-    xs = Float64[x0]
-    for i in 1:5
-        push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
-    end
-    
-    m,M = extrema(xs)
-    m = min(m, a)
-    M = max(M, b)
-    
-    plot(f, m, M; linewidth=3, legend=false, kwargs...)
-    plot!(zero)
-    for i in 1:4
-        plot!([xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
-        scatter!(xs[i:i],[0])
-    end
-    scatter!(xs[5:5], [0])
-end
-    
 
 
 
@@ -171,7 +143,8 @@ end
 
 
 
-
+###
+include("demos.jl")
 
 
 
