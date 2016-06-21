@@ -27,6 +27,7 @@ module MTH229
 using Reexport
 @reexport using Plots
 @reexport using Roots
+using ForwardDiff
 @reexport using SymPy
 
 
@@ -35,7 +36,7 @@ export tangent, secant
 export plotif, riemann
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.ctranspose(f::Function) = D(f)
+Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, x)
 
 """
 tangent
