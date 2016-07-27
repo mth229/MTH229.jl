@@ -3,4 +3,5 @@ Plots
 Roots
 ForwardDiff
 SymPy
+Interact
 Reexport

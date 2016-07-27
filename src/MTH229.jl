@@ -33,10 +33,12 @@ using ForwardDiff
 
 ### 
 export tangent, secant
-export plotif, riemann
+export lim,  bisection, riemann
+export plotif
+
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, x)
+Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 
 """
 tangent
@@ -47,6 +49,29 @@ tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 secant
 """
 secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / (b-a) * (x - a)
+
+
+"""
+
+`lim(f, c, n, dir="+")`: means to generate numeric table of values of `f` as `h` gets close to `c`.
+
+Example:
+```
+f(x) = sin(x) / x
+lim(f, 0)
+```
+"""
+function lim(f::Function, c::Real; n::Int=6, dir="+")
+	 hs = [(1/10)^i for i in 1:n] # close to 0
+	 if dir == "+"
+	   xs = c + hs 
+	 else
+	   xs = c - hs
+	 end
+	 ys = map(f, xs)
+	 [xs ys]
+end
+
 
 """
 
@@ -103,7 +128,7 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 """
 function plotif(f, g, a, b, args...; kwargs...)
     p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
-    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN; linewidth=5)
+    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN, a, b; linewidth=5)
     p
 end
 

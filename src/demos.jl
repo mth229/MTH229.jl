@@ -88,7 +88,7 @@ end
 `bisection_viz(f, a, b)`: for a bracketing interval `[a,b]`, show first few steps of the bisection method
 
 ```
-bisection(sin, 3, 4)
+bisection_viz(sin, 3, 4)
 ```
 """
 function bisection_viz(f, a, b)
@@ -171,7 +171,7 @@ function derivative_viz(f::Function, c, a=c-1/2, b=c+1/2)
 
 	p = plot(f, a, b, title="Plotting secant line with h=(1/2)^$j, error is about (1/2)^(-$e)", linewidth=3, legend=false)
 	m = (f(c + h) - f(c)) / h
-	plot!(p, x -> f(c) + m * (x-c), linewidth=3)
+	plot!(p, x -> f(c) + m * (x-c), a, b, linewidth=3)
         scatter!(p, [c, c+h], [f(c), f(c+h)], markersize=3)
 #	plot!(p, x -> f(c) + f'(c)*(x-c))
         p
@@ -206,7 +206,7 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     M = max(M, b)
     
     p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
-    plot!(p, zero)
+    plot!(p, zero, m, M)
     for i in 1:steps
         plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
         scatter!(p, xs[i:i],[0])
