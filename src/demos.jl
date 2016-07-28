@@ -222,10 +222,10 @@ Simple visualization of Newton's method
 
 ```
 f(x) = log(x) - 1/10
-newton_viz(f, 1)
+newton_viz(f, 1) # newton_viz(f, 1, steps=20)
 """
-function newton_viz(f::Function, x0, a=Inf, b = -Inf)
-    @manipulate for nsteps = slider(1:8, value=1, label="no. steps")
+function newton_viz(f::Function, x0, a=Inf, b = -Inf; steps=10)
+    @manipulate for nsteps = slider(1:steps, value=1, label="no. steps")
         newton_vis(f, x0, a, b; steps=nsteps)
     end
 end

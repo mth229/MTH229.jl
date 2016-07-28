@@ -4,4 +4,5 @@ Roots
 ForwardDiff
 SymPy
 Interact
+GR
 Reexport

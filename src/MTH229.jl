@@ -30,6 +30,7 @@ using Reexport
 using ForwardDiff
 @reexport using SymPy
 
+Plots.plotly()                          # choose as default
 
 ### 
 export tangent, secant
