@@ -4,5 +4,6 @@ Roots
 ForwardDiff
 SymPy
 Interact
+PlotlyJS
 GR
 Reexport
