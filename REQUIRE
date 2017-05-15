@@ -2,5 +2,4 @@ julia
 Plots
 Roots
 ForwardDiff
-SymPy
 Reexport

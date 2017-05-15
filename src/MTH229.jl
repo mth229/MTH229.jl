@@ -28,7 +28,7 @@ using Reexport
 @reexport using Plots
 @reexport using Roots
 using ForwardDiff
-@reexport using SymPy
+## @reexport using SymPy ## wait for PyCall for v0.6
 
 Plots.plotly()                          # choose as default
 
@@ -151,13 +151,13 @@ riemann(f, 0, 1, 1000, method="simpsons")   # use Simpson's rule
 """
 function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
   if method == "right"
-     meth(f,l,r) = f(r) * (r-l)
+     meth = (f,l,r) -> f(r) * (r-l)
   elseif method == "left"
-     meth(f,l,r) = f(l) * (r-l)
+     meth= (f,l,r) -> f(l) * (r-l)
   elseif method == "trapezoid"
-     meth(f,l,r) = (1/2) * (f(l) + f(r)) * (r-l)
+     meth = (f,l,r) -> (1/2) * (f(l) + f(r)) * (r-l)
   elseif method == "simpsons"
-     meth(f,l,r) = (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
+     meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
   xs = a + (0:n) * (b-a)/n
