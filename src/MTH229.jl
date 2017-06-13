@@ -1,3 +1,5 @@
+__precompile__(true)
+
 """
 
 `MTH229`: helper functions for using `Julia` with MTH229
@@ -13,7 +15,10 @@ The helper functions include:
 
 - `tangent(f, c)`:  return a function giving the tangent line to ``f(x)`` at the point ``(c,f(c))``.
 
-- `bisection(f, a, b)`: A simple implementation of the bisection method. The interval ``[a,b]`` should be a bracketing interval. For real use, the `fzero(f, a, b)` function, from the `Roots` package, should be used.
+- `bisection(f, a, b)`: A simple implementation of the bisection
+  method. The interval ``[a,b]`` should be a bracketing interval. This
+  function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
+  a, b)` function, from the `Roots` package, should be used.
 
 - `ctranspose`: This allows the derivative of   a function to be found as with math notation: `f'`. It is an alias to `D(f)` from the Roots package. The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
 
@@ -24,13 +29,21 @@ The helper functions include:
 """
 module MTH229
 
+import Combinatorics
+import Iterators
+
 using Reexport
 @reexport using Plots
 @reexport using Roots
-using ForwardDiff
-## @reexport using SymPy ## wait for PyCall for v0.6
+@reexport using SpecialFunctions
+@reexport using SymPy ## wait for PyCall for v0.6
 
-Plots.plotly()                          # choose as default
+import ForwardDiff
+import QuadGK: quadgk
+export quadgk
+
+
+ENV["PLOTS_DEFAULT_BACKEND"] = "plotly"
 
 ### 
 export tangent, secant
@@ -42,12 +55,32 @@ export plotif
 Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 
 """
-tangent
+Returns a function describing the tangent line to the graph of f at x=c.
+
+Example. Where does the tangent line intersect the y axis?
+```
+f(x) = sin(x)
+tl(x) = tangent(f, pi/4)(x)  # or tl = tangent(f, pi/3) to use a non-generic function
+tl(0)
+```
+
+Uses the automatic derivative of `f` to find the slope of the tangent line at `x=c`.
+    
 """
 tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 
 """
-secant
+Returns a function describing the secant line to the graph of f at x=a and $x=b.
+
+Example. Where does the secant line intersect the y axis?
+```
+f(x) = sin(x)
+a, b = pi/4, pi/3
+sl(x) = secant(f, a, b)(x)  # or sl = sl(f, a, b) to use a non-generic function
+sl(0)
+```
+
+    
 """
 secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / (b-a) * (x - a)
 
@@ -78,36 +111,74 @@ end
 
 Simple implementation of the bisection method.
 
-Example
-```
+Example:
+
+```julia
 bisection(sin, 3, 4)
 f(x) = x^5 - x^4 - x^3 - x^2 - x - 1
 a = bisection(f, 1, 2)
 f(a)
 ```
 
+The display shows a simple graphic illustrating the method's division for the first few steps.    
+    
 
 """
 function bisection(f::Function, a, b)
     a,b = sort([a,b])
+
     if f(a) * f(b) > 0
-        error("[a,b] is not a bracket. A bracket means f(a) and f(b) have different signs/")
+        error("[a,b] is not a bracket. A bracket means f(a) and f(b) have different signs!")
     end
 
     M = a + (b-a) / 2
+
+
+    i, j = 0, 64
+    ss = fill("#", 65)
+    ss[i+1]="a"; ss[j+1]="b"
+    println("")    
+    println(join(ss))
+    flag = true
     
     while a < M < b
+        if flag && j-i == 1
+            ss = fill(" ", 65)
+            ss[j:(j+1)] = "⋮"
+            println(join(ss))
+            println("")
+            flag = false
+        end
 
+        
         if f(M) == 0.0
-	  break
+            println("... exact answer found ...")
+	    break
         end
         ## update step
-	if f(a) * f(M) < 0 
-	   a, b = a, M
+	if f(a) * f(M) < 0
+	    a, b = a, M
+            
+            if flag
+                j = div(i + j, 2)
+            end
+       
+
 	else
-	   a, b = M, b
+	    a, b = M, b
+
+            if flag
+                i = div(i + j, 2)
+            end
+            
 	end
 
+        if flag
+            ss = fill(".", 65)
+            ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j]="#"
+            println(join(ss))
+        end
+        
         M = a + (b-a) / 2
     end
     M

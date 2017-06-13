@@ -1,5 +1,9 @@
 julia
+Iterators
+Combinatorics
 Plots
 Roots
 ForwardDiff
 Reexport
+QuadGK
+SpecialFunctions
