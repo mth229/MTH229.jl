@@ -1,4 +1,4 @@
-__precompile__(true)
+__precompile__(false)  # Plots issue?
 
 """
 
@@ -6,8 +6,9 @@ __precompile__(true)
 
 This module does two things:
 
-* Install other useful packages with one command (`Plots`, `Roots`, and `SymPy`)
-* add a number of helper functions.
+* Install other useful packages with one command (`Plots`, `Roots`, `SymPy`, `QuadGK`, `SpecialFunctions`)
+
+* Add a number of helper functions.
 
 The helper functions include:
 
@@ -26,15 +27,15 @@ The helper functions include:
 
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
+
+There are a collection of "demos". Try `?visualizations` for a description.
 """
 module MTH229
-
-import Combinatorics
-import Iterators
 
 using Reexport
 @reexport using Plots
 @reexport using Roots
+#@reexport using PolynomialZeros
 @reexport using SpecialFunctions
 @reexport using SymPy ## wait for PyCall for v0.6
 
@@ -70,7 +71,7 @@ Uses the automatic derivative of `f` to find the slope of the tangent line at `x
 tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 
 """
-Returns a function describing the secant line to the graph of f at x=a and $x=b.
+Returns a function describing the secant line to the graph of f at x=a and x=b.
 
 Example. Where does the secant line intersect the y axis?
 ```
@@ -200,11 +201,31 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 """
 function plotif(f, g, a, b, args...; kwargs...)
     p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
-    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN, a, b; linewidth=5)
+    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN, linspace(a, b, 251); linewidth=5)
     p
 end
 
 
+# visualize newtons method
+function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
+    xs = Float64[x0]
+    for i in 1:steps
+        push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
+    end
+    
+    m,M = extrema(xs)
+    m = min(m, a)
+    M = max(M, b)
+    
+    p = plot(f, linspace(m, M, 251); linewidth=3, legend=false, kwargs...)
+    plot!(p, zero, m, M)
+    for i in 1:steps
+        plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
+        scatter!(p, xs[i:i],[0])
+    end
+    scatter!(p, [xs[steps+1]], [0])
+    p
+end
 
 
 """
@@ -237,12 +258,13 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
 end
 
 
-
+import SymPy: real_roots
+real_roots(f; kwargs...) = PolynomialZeros.poly_roots(f, Over.R, kwargs...)
 
 
 
 ###
-#include("demos.jl")
+include("demos.jl")
 
 
 

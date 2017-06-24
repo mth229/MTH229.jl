@@ -1,9 +1,8 @@
 julia
-Iterators
-Combinatorics
+Reexport
 Plots
+GR
 Roots
 ForwardDiff
-Reexport
 QuadGK
 SpecialFunctions
