@@ -1,7 +1,6 @@
 julia
 Reexport
 Plots
-GR
 Roots
 ForwardDiff
 QuadGK
