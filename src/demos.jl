@@ -42,7 +42,7 @@ export visualizations
 function trim_viz(f::Function, a=-5, b=5)
     trim(f, lo, hi) = x -> f(x) < lo ? NaN : (f(x) > hi ? NaN : f(x))
     @manipulate for lo in -[2^i for i in 1:10], hi in [2^i for i in 1:10]
-        plot(trim(f, lo, hi), linspace(a, b, 251))
+        plot(trim(f, lo, hi), a, b)
     end
 end
         
@@ -115,7 +115,7 @@ function bisection_viz(f, a, b)
         
 
         
-        p = plot(f, linspace(lo, hi, 251), linewidth=3, legend=false)
+        p = plot(f, lo, hi, linewidth=3, legend=false)
         scatter!(p, [rt], [0], markersize=3)
         if cvged
             scatter!(p, [rt], [0], markersize=6)
@@ -142,7 +142,7 @@ function limit_viz(f::Function, c, dir="+")
         h = (dir == "+" ? (1/2)^i : -(1/2)^i)
         s = (dir == "+" ? "+" : "-")
         val = f(c + h)
-        plot(f, linspace(c-1, c + 1, 251), linewidth=3, title="At c $s (1/2)^$i f is $(round(val,3))", legend=false)
+        plot(f, c-1, c + 1, linewidth=3, title="At c $s (1/2)^$i f is $(round(val,3))", legend=false)
         plot!([c-1, c+1], L * [1,1])
         plot!([c-1, c+1], val * [1,1])
         scatter!([c+h], [f(c+h)], markersize=3)
@@ -170,7 +170,7 @@ function derivative_viz(f::Function, c, a=c-1/2, b=c+1/2)
         err = abs(f'(c) - m)
         e = Int(round(log2(1 / err), 0))
 
-	p = plot(f, linspace(a, b, 251), title="Plotting secant line with h=(1/2)^$j, error is about (1/2)^(-$e)", linewidth=3, legend=false)
+	p = plot(f, a, b, title="Plotting secant line with h=(1/2)^$j, error is about (1/2)^(-$e)", linewidth=3, legend=false)
 	m = (f(c + h) - f(c)) / h
 	plot!(p, x -> f(c) + m * (x-c), a, b, linewidth=3)
         scatter!(p, [c, c+h], [f(c), f(c+h)], markersize=3)
@@ -191,7 +191,7 @@ critical_pts_viz(f, a, b)
 """
 function critical_pts_viz(f::Function, a, b)
     zs = fzeros(f', a, b)
-    plot(f, linspace(a, b, 251), legend=false)
+    plot(f, a, b, legend=false)
     scatter!(zs, f.(zs))
 end
 
@@ -230,7 +230,7 @@ function riemann_viz(f::Function, a, b)
         act_val = quadgk(f, a, b)[1]
         err = abs(val - act_val)
         e = Int(round(log2(1 / abs(val - act_val)), 0))
-        p = plot(f, linspace(a, b, 251), linewidth=3, legend=false, title="Riemann sum with n=2^$j: $(round(val,3)). Error is about 2^(-$e)")
+        p = plot(f, a, b, linewidth=3, legend=false, title="Riemann sum with n=2^$j: $(round(val,3)). Error is about 2^(-$e)")
         delta = (b-a)/n
         for i in 1:n
             plot!(p, a + delta * [i-1, i, i, i-1, i-1], f(a + i * delta) * [0,0,1,1,0], color=:blue)

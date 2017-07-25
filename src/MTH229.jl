@@ -1,12 +1,21 @@
 __precompile__(false)  # Plots issue?
 
+info("""
+Loading the `MTH229` package. 
+
+* Run the command `?MTH229` for a short description. 
+* Run the command `?visualizations` for a description of some interactive features.
+
+""")
+
+
 """
 
 `MTH229`: helper functions for using `Julia` with MTH229
 
 This module does two things:
 
-* Install other useful packages with one command (`Plots`, `Roots`, `SymPy`, `QuadGK`, `SpecialFunctions`)
+* Install other useful packages with one command (`Plots`, `Roots`, `SymPy`, `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
 
 * Add a number of helper functions.
 
@@ -28,23 +37,22 @@ The helper functions include:
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
-There are a collection of "demos". Try `?visualizations` for a description.
+There are a collection of "demos". Run `?visualizations` for a description.
 """
 module MTH229
 
 using Reexport
 @reexport using Plots
 @reexport using Roots
-#@reexport using PolynomialZeros
 @reexport using SpecialFunctions
-@reexport using SymPy ## wait for PyCall for v0.6
+@reexport using SymPy 
+#@reexport using PolynomialZeros  # precompile issue
 
 import ForwardDiff
 import QuadGK: quadgk
 export quadgk
 
 
-ENV["PLOTS_DEFAULT_BACKEND"] = "plotly"
 
 ### 
 export tangent, secant
@@ -201,7 +209,7 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 """
 function plotif(f, g, a, b, args...; kwargs...)
     p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
-    plot!(p,x -> g(x) > 0.0 ? f(x) : NaN, linspace(a, b, 251); linewidth=5)
+    plot!(p, x -> g(x) > 0.0 ? f(x) : NaN, a, b; linewidth=5)
     p
 end
 
@@ -217,7 +225,7 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     m = min(m, a)
     M = max(M, b)
     
-    p = plot(f, linspace(m, M, 251); linewidth=3, legend=false, kwargs...)
+    p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
     plot!(p, zero, m, M)
     for i in 1:steps
         plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
