@@ -209,7 +209,7 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 """
 function plotif(f, g, a, b, args...; kwargs...)
     p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
-    plot!(p, x -> g(x) > 0.0 ? f(x) : NaN, a, b; linewidth=5)
+    plot!(p, x -> g(x) > 0.0 ? f(x) : NaN, linspace(a, b, 251), linewidth=5)
     p
 end
 
