@@ -52,6 +52,8 @@ import ForwardDiff
 import QuadGK: quadgk
 export quadgk
 
+using Interact
+
 
 
 ### 
