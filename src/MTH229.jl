@@ -1,10 +1,11 @@
 __precompile__(false)  # Plots issue?
 
+# * Run the command `?visualizations` for a description of some interactive features.
 info("""
 Loading the `MTH229` package. 
 
 * Run the command `?MTH229` for a short description. 
-* Run the command `?visualizations` for a description of some interactive features.
+
 
 """)
 
@@ -37,9 +38,9 @@ The helper functions include:
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
-There are a collection of "demos". Run `?visualizations` for a description.
 """
 module MTH229
+#There are a collection of "demos". Run `?visualizations` for a description.
 
 using Reexport
 @reexport using Plots
@@ -274,7 +275,7 @@ real_roots(f; kwargs...) = PolynomialZeros.poly_roots(f, Over.R, kwargs...)
 
 
 ###
-include("demos.jl")
+#include("demos.jl")
 
 
 
