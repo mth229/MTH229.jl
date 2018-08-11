@@ -2,7 +2,6 @@ VERSION < v"0.7.0-" && __precompile__(false)  # Plots issue?
 
 # * Run the command `?visualizations` for a description of some interactive features.
 msg = """
-"""
 Loading the `MTH229` package. 
 
 * Run the command `?MTH229` for a short description. 
