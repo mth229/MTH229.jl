@@ -9,11 +9,8 @@ Loading the `MTH229` package.
 
 """
 
-if VERSION < v"0.7.0"
-    info(msg)
-else
-    @info msg
-end
+using Compat
+Compat.@info msg
 
 
 """
