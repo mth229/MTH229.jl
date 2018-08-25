@@ -53,9 +53,6 @@ using Reexport
 #@reexport using Roots
 
 @reexport using SpecialFunctions
-if !(Pkg.installed("SymPy") == nothing)
-    @reexport using SymPy
-end
 
 import ForwardDiff
 import QuadGK: quadgk
