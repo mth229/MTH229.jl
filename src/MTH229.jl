@@ -1,5 +1,8 @@
 VERSION < v"0.7.0-" && __precompile__(false)  # Plots issue?
 
+# If can't load into JuliaBox, use this:
+#  include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/MTH229.jl"))
+#
 # * Run the command `?visualizations` for a description of some interactive features.
 msg = """
 Loading the `MTH229` package. 
@@ -47,10 +50,12 @@ module MTH229
 
 using Reexport
 @reexport using Plots
-@reexport using Roots
+#@reexport using Roots
+
 @reexport using SpecialFunctions
-@reexport using SymPy 
-#@reexport using PolynomialZeros  # precompile issue
+if !(Pkg.installed("SymPy") == nothing)
+    @reexport using SymPy
+end
 
 import ForwardDiff
 import QuadGK: quadgk
@@ -63,11 +68,13 @@ export quadgk
 ### 
 export tangent, secant
 export lim,  bisection, riemann
-export plotif
+export plotif, trimplot, signchart
 
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
+D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForawrdDiff.derivative(f, float(x))
+export D
 
 """
 Returns a function describing the tangent line to the graph of f at x=c.
@@ -201,6 +208,14 @@ function bisection(f::Function, a, b)
     M
 end
 
+import Roots: newton
+newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton())
+newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
+fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
+fzeros(f, a, b; kwargs) = Roots.find_zeros(f, a, b; kwargs...)
+
+export newton, fzero, fzeros
+
 
 """
 plotif(f, g, a, b, args...; kwargs...)
@@ -214,13 +229,55 @@ plotif(f, f,   -1, 2.1)   # where f is positive
 plotif(f, f',  -1, 2.1)   # where f is increasing
 plotif(f, f'', -1, 2.1)   # where f is concave up
 ```
+
+
 """
-function plotif(f, g, a, b, args...; kwargs...)
-    p = plot(f, a, b, args...; kwargs..., linewidth=4, legend=false)
-    plot!(p, x -> g(x) > 0.0 ? f(x) : NaN, linspace(a, b, 251), linewidth=5)
-    p
+   trimplot(f, a, b, c=20; kwargs...)
+
+Plot f over [a,b] but break graph if it exceeds c in absolute value.
+"""
+function trimplot(f, a, b, c=20; kwargs...)
+  xs = range(a, stop=b, length=251)
+  ys = f.(xs)
+
+  us, vs = Real[], Real[]
+  p = plot(us, vs, xlim=(a, b), legend=false, kwargs...)
+  for (x,y) in zip(xs, ys)
+    if abs(y) <= c
+       push!(us, x); push!(vs, y)
+    else
+      length(us) > 0 && plot!(p, us, vs, color=:blue)
+      empty!(us); empty!(vs)
+    end
+ end	
+ length(us) > 0 && plot!(p, us, vs, color=:blue)
+ p
 end
 
+
+"""
+    plotif(f, g, a, b)
+
+Plot f colored depending on g < 0 or not.
+"""    
+function plotif(f, g, a, b)
+       xs = range(a, stop=b, length=251)
+       ys = f.(xs)
+       cols = [gx < 0 ? :red : :blue for gx in g.(xs)]
+       p = plot(xs, ys, color=cols, linewidth=5, legend=false)
+       p
+end
+
+"""
+   signchart(f, a, b)
+
+Plot f over a,b with different color when negative.    
+"""
+function signchart(f, a, b)
+    p = plotif(f, f, a, b)
+    plot!(p, zero)
+    p
+end
 
 # visualize newtons method
 function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
