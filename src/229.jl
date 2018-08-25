@@ -182,14 +182,9 @@ end
     plotif(f, g, a, b)
 
 Plot f colored depending on g < 0 or not.
-"""    
+"""
 function plotif(f, g, a, b)
-    xs = linspace(a, b, 251)#range(a, stop=b, length=251)
-    ys = f.(xs)
-    p = plot(xs, ys, color=:blue, linewidth=5, legend=false)
-    zs = [g(x) < 0 ? NaN : f(x) for x in xs]
-    plot!(p, xs, zs, color=:red, linewidth=5)
-    p
+  plot([f, x -> g(x) > 0.0 ? f(x) : NaN], a, b, linewidth=5)
 end
 
 """
