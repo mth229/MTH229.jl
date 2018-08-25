@@ -22,7 +22,7 @@ Compat.@info msg
 
 This module does two things:
 
-* Install other useful packages with one command (`Plots`, `Roots`, `SymPy`, `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
+* Install other useful packages with one command (`Plots`, `Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
 
 * Add a number of helper functions.
 
@@ -70,7 +70,7 @@ export plotif, trimplot, signchart
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
-D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForawrdDiff.derivative(f, float(x))
+D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
 export D
 
 """
@@ -205,28 +205,17 @@ function bisection(f::Function, a, b)
     M
 end
 
-import Roots: newton
+import Roots
+import Roots: newton, find_zero, find_zeros
 newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton())
 newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
 fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
-fzeros(f, a, b; kwargs) = Roots.find_zeros(f, a, b; kwargs...)
+fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)
+fzeros(f, a, b; kwargs...) = Roots.find_zeros(f, a, b; kwargs...)
 
 export newton, fzero, fzeros
 
-
-"""
-plotif(f, g, a, b, args...; kwargs...)
-
-Plot the function `f` over the interval `[a,b]`. Replot the same function in a different color when ``g > 0``.
-
-Examples
-```
-f(x) = x^4 - x^3 - x^2 - x - 1
-plotif(f, f,   -1, 2.1)   # where f is positive
-plotif(f, f',  -1, 2.1)   # where f is increasing
-plotif(f, f'', -1, 2.1)   # where f is concave up
-```
-
+# some plotting utilities
 
 """
    trimplot(f, a, b, c=20; kwargs...)
@@ -234,7 +223,7 @@ plotif(f, f'', -1, 2.1)   # where f is concave up
 Plot f over [a,b] but break graph if it exceeds c in absolute value.
 """
 function trimplot(f, a, b, c=20; kwargs...)
-  xs = range(a, stop=b, length=251)
+  xs = linspace(a, b, 251) #range(a, stop=b, length=251)
   ys = f.(xs)
 
   us, vs = Real[], Real[]
@@ -258,7 +247,7 @@ end
 Plot f colored depending on g < 0 or not.
 """    
 function plotif(f, g, a, b)
-       xs = range(a, stop=b, length=251)
+       xs = linspace(a, b, 251)#range(a, stop=b, length=251)
        ys = f.(xs)
        cols = [gx < 0 ? :red : :blue for gx in g.(xs)]
        p = plot(xs, ys, color=cols, linewidth=5, legend=false)
@@ -275,6 +264,7 @@ function signchart(f, a, b)
     plot!(p, zero)
     p
 end
+
 
 # visualize newtons method
 function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
