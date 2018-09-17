@@ -1,5 +1,5 @@
 # If can't load into JuliaBox, use this:
-#  include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/MTH229.jl"))
+#  include(download("rw = "https://raw.githubusercontent.com/mth229/MTH229.jl/v1.0/src/229.jl""))
 #
 # * Run the command `?visualizations` for a description of some interactive features.
 

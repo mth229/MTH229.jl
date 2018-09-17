@@ -1,5 +1,5 @@
 ### Load in with
-### include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/229.jl"))
+### include(download("rw = "https://raw.githubusercontent.com/mth229/MTH229.jl/v1.0/src/229.jl""))
 
 using Plots
 using SpecialFunctions
