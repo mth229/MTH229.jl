@@ -1,19 +1,17 @@
-VERSION < v"0.7.0-" && __precompile__(false)  # Plots issue?
-
 # If can't load into JuliaBox, use this:
 #  include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/MTH229.jl"))
 #
 # * Run the command `?visualizations` for a description of some interactive features.
-msg = """
-Loading the `MTH229` package. 
 
-* Run the command `?MTH229` for a short description. 
+msg = """
+Loading the `MTH229` package.
+
+* Run the command `?MTH229` for a short description.
 
 
 """
 
-using Compat
-Compat.@info msg
+@info msg
 
 
 """
@@ -62,18 +60,20 @@ export quadgk
 
 
 
-### 
+###
 export tangent, secant
 export lim,  bisection, riemann
 export plotif, trimplot, signchart
 
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
+Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
 export D
 
 """
+    tangent(f, c)
+
 Returns a function describing the tangent line to the graph of f at x=c.
 
 Example. Where does the tangent line intersect the y axis?
@@ -84,7 +84,7 @@ tl(0)
 ```
 
 Uses the automatic derivative of `f` to find the slope of the tangent line at `x=c`.
-    
+
 """
 tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 
@@ -99,14 +99,16 @@ sl(x) = secant(f, a, b)(x)  # or sl = sl(f, a, b) to use a non-generic function
 sl(0)
 ```
 
-    
+
 """
 secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / (b-a) * (x - a)
 
 
 """
+    lim(f, c, n, dir="+")
 
-`lim(f, c, n, dir="+")`: means to generate numeric table of values of `f` as `h` gets close to `c`.
+Generate numeric table of values of `f` as `h` gets close to `c`. Used to "investigate" limit
+as x goes to c of f(x).
 
 Example:
 ```
@@ -117,7 +119,7 @@ lim(f, 0)
 function lim(f::Function, c::Real; n::Int=6, dir="+")
 	 hs = [(1/10)^i for i in 1:n] # close to 0
 	 if dir == "+"
-	   xs = c + hs 
+	   xs = c + hs
 	 else
 	   xs = c - hs
 	 end
@@ -127,8 +129,10 @@ end
 
 
 """
+    bisection(f, a, b)
 
-Simple implementation of the bisection method.
+Simple implementation of the bisection method to find zero of f between bracketing
+interval (a, b). Creates a simple ASCII graphic of first few steps of the algorithm.
 
 Example:
 
@@ -142,7 +146,7 @@ f(a)
 The display shows a simple graphic illustrating the method's division for the first few steps.
 
 An easier-to-understand alternative to `Roots.find_zero(f, (a,b), Bisection())`.
-    
+
 
 """
 function bisection(f::Function, a, b)
@@ -152,26 +156,27 @@ function bisection(f::Function, a, b)
         error("[a,b] is not a bracket. A bracket means f(a) and f(b) have different signs!")
     end
 
-    M = a + (b-a) / 2
+    M =  a/2 + b/2
 
 
     i, j = 0, 64
     ss = fill("#", 65)
     ss[i+1]="a"; ss[j+1]="b"
-    println("")    
+    println("")
     println(join(ss))
     flag = true
-    
-    while a < M < b
+
+    while abs(a-b) > max(abs(a), abs(b)) * 4 * eps()
+
         if flag && j-i == 1
             ss = fill(" ", 65)
-            ss[j:(j+1)] = "⋮"
-            println(join(ss))
+            ss[j:(j+1)] .= "⋮"
+            println(join(ss, ""))
             println("")
             flag = false
         end
 
-        
+
         if f(M) == 0.0
             println("... exact answer found ...")
 	    break
@@ -179,11 +184,11 @@ function bisection(f::Function, a, b)
         ## update step
 	if f(a) * f(M) < 0
 	    a, b = a, M
-            
+
             if flag
                 j = div(i + j, 2)
             end
-       
+
 
 	else
 	    a, b = M, b
@@ -191,22 +196,22 @@ function bisection(f::Function, a, b)
             if flag
                 i = div(i + j, 2)
             end
-            
+
 	end
 
         if flag
             ss = fill(".", 65)
-            ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j]="#"
+            ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j] .= "#"
             println(join(ss))
         end
-        
-        M = a + (b-a) / 2
+
+        M = a/2 + b/2
     end
     M
 end
 
 import Roots
-import Roots: newton, find_zero, find_zeros
+import Roots: find_zero, find_zeros
 newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
 newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
 fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
@@ -235,7 +240,7 @@ function trimplot(f, a, b, c=20; kwargs...)
       length(us) > 0 && plot!(p, us, vs, color=:blue)
       empty!(us); empty!(vs)
     end
- end	
+ end
  length(us) > 0 && plot!(p, us, vs, color=:blue)
  p
 end
@@ -245,7 +250,7 @@ end
     plotif(f, g, a, b)
 
 Plot f colored depending on g < 0 or not.
-"""    
+"""
 function plotif(f, g, a, b)
     xs = linspace(a, b, 251)#range(a, stop=b, length=251)
     ys = f.(xs)
@@ -258,7 +263,7 @@ end
 """
    signchart(f, a, b)
 
-Plot f over a,b with different color when negative.    
+Plot f over a,b with different color when negative.
 """
 function signchart(f, a, b)
     p = plotif(f, f, a, b)
@@ -273,11 +278,11 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     for i in 1:steps
         push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
     end
-    
+
     m,M = extrema(xs)
     m = min(m, a)
     M = max(M, b)
-    
+
     p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
     plot!(p, zero, m, M)
     for i in 1:steps
@@ -290,9 +295,13 @@ end
 
 
 """
-riemann: compute Riemann sum approximations to a definite integral. As well, implement trapezoid and Simpson's rule.
+    riemann(f, a, b, n, [method="right"])
+
+Compute Riemann sum approximations to a definite
+integral. As well, implement trapezoid and Simpson's rule.
 
 Example:
+
 ```
 f(x) = exp(x^2)
 riemann(f, 0, 1, 1000)   # default right-Riemann sums
@@ -313,7 +322,7 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a + (0:n) * (b-a)/n
+  xs = a .+ (0:n) .* (b-a)/n
   as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
   sum(as)
 end

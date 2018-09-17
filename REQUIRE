@@ -1,5 +1,4 @@
 julia
-Compat
 Reexport
 Plots
 Roots
