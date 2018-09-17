@@ -60,13 +60,31 @@ export quadgk
 
 
 
+
 ###
 export tangent, secant
 export lim,  bisection, riemann
 export plotif, trimplot, signchart
 
+# contstants
+e = Base.MathConstants.e
+export e
 
-" f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
+"""
+    f'
+
+Use `ForwardDiff` to take derivative of a univariate function.
+
+Note: This can cause issues if arrays of functions are used.
+
+Examples:
+
+```
+f(x) = sin(x)
+f'(3) - cos(3) # should be basically 0
+f''(3) ≈ -sin(3)
+```
+"""
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
 export D
