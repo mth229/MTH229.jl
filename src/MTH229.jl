@@ -137,9 +137,9 @@ lim(f, 0)
 function lim(f::Function, c::Real; n::Int=6, dir="+")
 	 hs = [(1/10)^i for i in 1:n] # close to 0
 	 if dir == "+"
-	   xs = c + hs
+	   xs = c .+ hs
 	 else
-	   xs = c - hs
+	   xs = c .- hs
 	 end
 	 ys = map(f, xs)
 	 [xs ys]
