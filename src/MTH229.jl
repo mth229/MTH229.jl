@@ -5,9 +5,9 @@ VERSION < v"0.7.0-" && __precompile__(false)  # Plots issue?
 #
 # * Run the command `?visualizations` for a description of some interactive features.
 msg = """
-Loading the `MTH229` package. 
+Loading the `MTH229` package.
 
-* Run the command `?MTH229` for a short description. 
+* Run the command `?MTH229` for a short description.
 
 
 """
@@ -62,7 +62,7 @@ export quadgk
 
 
 
-### 
+###
 export tangent, secant
 export lim,  bisection, riemann
 export plotif, trimplot, signchart
@@ -84,7 +84,7 @@ tl(0)
 ```
 
 Uses the automatic derivative of `f` to find the slope of the tangent line at `x=c`.
-    
+
 """
 tangent(f,c) = x -> f(c) + f'(c) * (x-c)
 
@@ -99,7 +99,7 @@ sl(x) = secant(f, a, b)(x)  # or sl = sl(f, a, b) to use a non-generic function
 sl(0)
 ```
 
-    
+
 """
 secant(f, a, b) = x -> f(a) + (f(b) - f(a)) / (b-a) * (x - a)
 
@@ -117,9 +117,9 @@ lim(f, 0)
 function lim(f::Function, c::Real; n::Int=6, dir="+")
 	 hs = [(1/10)^i for i in 1:n] # close to 0
 	 if dir == "+"
-	   xs = c + hs 
+	   xs = c .+ hs
 	 else
-	   xs = c - hs
+	   xs = c .- hs
 	 end
 	 ys = map(f, xs)
 	 [xs ys]
@@ -142,7 +142,7 @@ f(a)
 The display shows a simple graphic illustrating the method's division for the first few steps.
 
 An easier-to-understand alternative to `Roots.find_zero(f, (a,b), Bisection())`.
-    
+
 
 """
 function bisection(f::Function, a, b)
@@ -158,10 +158,10 @@ function bisection(f::Function, a, b)
     i, j = 0, 64
     ss = fill("#", 65)
     ss[i+1]="a"; ss[j+1]="b"
-    println("")    
+    println("")
     println(join(ss))
     flag = true
-    
+
     while a < M < b
         if flag && j-i == 1
             ss = fill(" ", 65)
@@ -171,7 +171,7 @@ function bisection(f::Function, a, b)
             flag = false
         end
 
-        
+
         if f(M) == 0.0
             println("... exact answer found ...")
 	    break
@@ -179,11 +179,11 @@ function bisection(f::Function, a, b)
         ## update step
 	if f(a) * f(M) < 0
 	    a, b = a, M
-            
+
             if flag
                 j = div(i + j, 2)
             end
-       
+
 
 	else
 	    a, b = M, b
@@ -191,7 +191,7 @@ function bisection(f::Function, a, b)
             if flag
                 i = div(i + j, 2)
             end
-            
+
 	end
 
         if flag
@@ -199,7 +199,7 @@ function bisection(f::Function, a, b)
             ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j]="#"
             println(join(ss))
         end
-        
+
         M = a + (b-a) / 2
     end
     M
@@ -235,7 +235,7 @@ function trimplot(f, a, b, c=20; kwargs...)
       length(us) > 0 && plot!(p, us, vs, color=:blue)
       empty!(us); empty!(vs)
     end
- end	
+ end
  length(us) > 0 && plot!(p, us, vs, color=:blue)
  p
 end
@@ -245,7 +245,7 @@ end
     plotif(f, g, a, b)
 
 Plot f colored depending on g < 0 or not.
-"""    
+"""
 function plotif(f, g, a, b)
     xs = linspace(a, b, 251)#range(a, stop=b, length=251)
     ys = f.(xs)
@@ -258,7 +258,7 @@ end
 """
    signchart(f, a, b)
 
-Plot f over a,b with different color when negative.    
+Plot f over a,b with different color when negative.
 """
 function signchart(f, a, b)
     p = plotif(f, f, a, b)
@@ -273,11 +273,11 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     for i in 1:steps
         push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
     end
-    
+
     m,M = extrema(xs)
     m = min(m, a)
     M = max(M, b)
-    
+
     p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
     plot!(p, zero, m, M)
     for i in 1:steps
