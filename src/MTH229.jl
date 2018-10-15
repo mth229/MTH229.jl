@@ -37,7 +37,7 @@ The helper functions include:
   function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
   a, b)` function, from the `Roots` package, should be used.
 
-- `ctranspose`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
+- `adjoint`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
 
@@ -69,7 +69,7 @@ export plotif, trimplot, signchart
 
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
+Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
 export D
 

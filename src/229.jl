@@ -8,7 +8,7 @@ import ForwardDiff
 import QuadGK: quadgk
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.ctranspose(f::Function) = x -> ForwardDiff.derivative(f, float(x))
+Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
 
 """
