@@ -7,7 +7,7 @@ using SpecialFunctions
 import ForwardDiff
 import QuadGK: quadgk
 
-if VERSION >= v1.0.0
+if VERSION >= v"1.0.0"
     linspace(a,b,n=51) = range(a, stop=b, length=n)
 end
 
