@@ -7,6 +7,11 @@ using SpecialFunctions
 import ForwardDiff
 import QuadGK: quadgk
 
+if VERSION >= v1.0.0
+    linspace(a,b,n=51) = range(a, stop=b, length=n)
+end
+
+
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
