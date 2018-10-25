@@ -3,6 +3,7 @@
 
 using Plots
 using SpecialFunctions
+using Base.MathConstants
 
 import ForwardDiff
 import QuadGK: quadgk
@@ -250,7 +251,7 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a + (0:n) * (b-a)/n
+  xs = a .+ (0:n) * (b-a)/n
   as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
   sum(as)
 end
