@@ -1,6 +1,22 @@
 ### Load in with
 ### include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/229.jl"))
 
+
+# we use v0.7+
+using Pkg
+if VERSION >= v"0.7.0"
+
+    installed = keys(Pkg.installed())
+    for pkg in ("SymPy", "SpecialFunctions", "Roots", "ForwardDiff", "Plots", "QuadGK")
+        if !(pkg in installed)
+            @info "Need to install $pkg"
+            Pkg.add(pkg)
+        end
+    end
+end
+
+
+
 using Plots
 using SpecialFunctions
 using Base.MathConstants
