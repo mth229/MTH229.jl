@@ -205,8 +205,32 @@ end
 
 Plot f colored depending on g < 0 or not.
 """
-function plotif(f, g, a, b)
-  plot([f, x -> g(x) > 0.0 ? f(x) : NaN], a, b, linewidth=5)
+function plotif(f, g, a, b; colors=(:blue,:red))
+
+    xs = a:(b-a)/251:b
+    zs = f.(xs)
+    p = plot(xs, f.(xs), color=colors[1], linewidth=5, legend=false)
+
+    ys = g.(xs)
+    ys[ys .< 0] .= NaN
+
+    us,vs = Float64[], Float64[]
+    for (i,y) in enumerate(ys)
+        if isnan(y)
+            if !isempty(vs)
+                plot!(us, vs, color=colors[2], linewidth=5)
+                empty!(us)
+                empty!(vs)
+            end
+        else
+            push!(us, xs[i])
+            push!(vs, zs[i])
+        end
+    end
+    if !isempty(vs)
+        plot!(p, us, vs, color=colors[2], linewidth=5)
+    end
+    p
 end
 
 """
