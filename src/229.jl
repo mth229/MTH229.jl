@@ -20,6 +20,9 @@ end
 using Plots
 using SpecialFunctions
 using Base.MathConstants
+using Roots
+using SymPy
+using LinearAlgebra
 
 import ForwardDiff
 import QuadGK: quadgk
@@ -156,7 +159,7 @@ function bisection(f::Function, a, b)
 
         if flag
             ss = fill(".", 65)
-            ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j]="#"
+            ss[i+1]="a"; ss[j+1]="b"; ss[(i+2):j] .="#"
             println(join(ss))
         end
 
@@ -164,14 +167,6 @@ function bisection(f::Function, a, b)
     end
     M
 end
-
-import Roots
-import Roots: newton, find_zero, find_zeros
-newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
-newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
-fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
-fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)
-fzeros(f, a, b; kwargs...) = Roots.find_zeros(f, a, b; kwargs...)
 
 
 # some plotting utilities
@@ -295,3 +290,73 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
   as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
   sum(as)
 end
+
+
+## 2- and 3-D plotting
+uvec(x) = x / norm(x)
+
+"""
+    `xs_ys(vs)`
+    `xs_ys(v1, v2, ...)`
+    `xs_ys(r::Function, a, b)`
+
+Take a vector of points described by vectors (as returned by, say
+`r(t)=[sin(t),cos(t)], r.([1,2,3])`, and return a tuple of collected x
+values, y values, and optionally z values.
+
+If the argument is specified as a comma separated collection of vectors, then these are combined and passed along.
+
+If the argument is a function and two end point, then the function is
+evaluated at 100 points between `a` and `b`.
+
+This is useful for plotting when the data is more conveniently
+represented in terms of vectors, but the plotting interface requires the x and y values collected.
+
+Examples:
+```
+using Plots
+r(t) = [sin(t), cos(t)]
+rp(t) = [cos(t), -sin(t)]
+plot(xs_ys(r, 0, 2pi)...)  # calls plot(xs, ys)
+
+t0, t1 = pi/6, pi/4
+
+p, v = r(t0), rp(t0)
+plot!(xs_ys(p, p+v)...)  # connect p to p+v with line
+
+p, v = r(t1), rp(t1)
+quiver!(xs_ys([p])..., quiver=xs_ys([v]))
+```
+"""
+xs_ys(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
+xs_ys(v,vs...) = xs_ys([v, vs...])
+xs_ys(r::Function, a, b, n=100) = xs_ys(r.(range(a, stop=b, length=n)))
+
+
+"""
+   `arrow!(p, v)`
+
+Add the vector `v` to the plot anchored at `p`.
+
+This would just be a call to `quiver`, but there is no 3-D version of that. As well, the syntax for quiver is a bit awkward for plotting just a single arrow. (Though efficient if plotting many).
+
+```
+using Plots
+r(t) = [sin(t), cos(t), t]
+rp(t) = [cos(t), -sin(t), 1]
+plot(xs_ys(r, 0, 2pi)...)
+t0 = 1
+arrow!(r(t0), r'(t0))
+```
+
+function arrow!(plt::Plots.Plot, p, v; kwargs...)
+  if length(p) == 2
+     quiver!(plt, xs_ys([p])..., quiver=Tuple(xs_ys([v])); kwargs...)
+  elseif length(p) == 3
+    # 3d quiver needs support
+    # https://github.com/JuliaPlots/Plots.jl/issues/319#issue-159652535
+    # headless arrow instead
+    plot!(plt, xs_ys(p, p+v)...; kwargs...)
+	end
+end
+arrow!(p,v;kwargs...) = arrow!(Plots.current(), p, v; kwargs...)
