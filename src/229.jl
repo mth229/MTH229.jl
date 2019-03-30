@@ -168,6 +168,9 @@ function bisection(f::Function, a, b)
     M
 end
 
+newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
+newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
+
 
 # some plotting utilities
 

@@ -207,10 +207,10 @@ function bisection(f::Function, a, b)
     M
 end
 
-import Roots
-import Roots: newton, find_zero, find_zeros
-#newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
-#newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
+newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
+newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
+export newton
+
 #fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
 #fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)
 #fzeros(f, a, b; kwargs...) = Roots.find_zeros(f, a, b; kwargs...)
