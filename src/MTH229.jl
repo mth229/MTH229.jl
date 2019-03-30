@@ -66,7 +66,7 @@ import ForwardDiff
 ###
 export tangent, secant
 export lim,  bisection, riemann
-export plotif, trimplot, signchart
+export plotif, trimplot, signchart, newton_vis
 export uvec, xs_ys, arrow!
 
 
@@ -167,7 +167,7 @@ function bisection(f::Function, a, b)
     while a < M < b
         if flag && j-i == 1
             ss = fill(" ", 65)
-            ss[j:(j+1)] = "⋮"
+            ss[j:(j+1)] .= "⋮"
             println(join(ss))
             println("")
             flag = false
@@ -224,7 +224,7 @@ export newton
 Plot f over [a,b] but break graph if it exceeds c in absolute value.
 """
 function trimplot(f, a, b, c=20; kwargs...)
-  xs = linspace(a, b, 251) #range(a, stop=b, length=251)
+  xs = range(a, stop=b, length=251)
   ys = f.(xs)
 
   us, vs = Real[], Real[]
@@ -333,7 +333,7 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a + (0:n) * (b-a)/n
+  xs = a .+ (0:n) * (b-a)/n
   as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
   sum(as)
 end

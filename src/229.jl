@@ -128,7 +128,7 @@ function bisection(f::Function, a, b)
     while a < M < b
         if flag && j-i == 1
             ss = fill(" ", 65)
-            ss[j:(j+1)] = "⋮"
+            ss[j:(j+1)] .= "⋮"
             println(join(ss))
             println("")
             flag = false
@@ -180,7 +180,7 @@ newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
 Plot f over [a,b] but break graph if it exceeds c in absolute value.
 """
 function trimplot(f, a, b, c=20; kwargs...)
-  xs = linspace(a, b, 251) #range(a, stop=b, length=251)
+  xs = range(a, stop=b, length=251)
   ys = f.(xs)
 
   us, vs = Real[], Real[]
@@ -289,7 +289,7 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a .+ (0:n) * (b-a)/n
+    xs = a .+ (0:n) * (b-a)/n
   as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
   sum(as)
 end
@@ -351,7 +351,25 @@ plot(xs_ys(r, 0, 2pi)...)
 t0 = 1
 arrow!(r(t0), r'(t0))
 ```
+"""
 
+
+"""
+   `arrow!(p, v)`
+
+Add the vector `v` to the plot anchored at `p`.
+
+This would just be a call to `quiver`, but there is no 3-D version of that. As well, the syntax for quiver is a bit awkward for plotting just a single arrow. (Though efficient if plotting many).
+
+```
+using Plots
+r(t) = [sin(t), cos(t), t]
+rp(t) = [cos(t), -sin(t), 1]
+plot(xs_ys(r, 0, 2pi)...)
+t0 = 1
+arrow!(r(t0), r'(t0))
+```
+"""
 function arrow!(plt::Plots.Plot, p, v; kwargs...)
   if length(p) == 2
      quiver!(plt, xs_ys([p])..., quiver=Tuple(xs_ys([v])); kwargs...)
