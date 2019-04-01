@@ -201,7 +201,7 @@ end
 """
     plotif(f, g, a, b)
 
-Plot f colored depending on g < 0 or not.
+Plot f colored depending on g >= 0 or not.
 """
 function plotif(f, g, a, b; colors=(:blue,:red))
 
@@ -215,17 +215,17 @@ function plotif(f, g, a, b; colors=(:blue,:red))
     us,vs = Float64[], Float64[]
     for (i,y) in enumerate(ys)
         if isnan(y)
-            if !isempty(vs)
-                plot!(us, vs, color=colors[2], linewidth=5)
-                empty!(us)
-                empty!(vs)
+            if length(vs) > 1
+                plot!(p, us, vs, color=colors[2], linewidth=5)
             end
+            empty!(us)
+            empty!(vs)
         else
             push!(us, xs[i])
             push!(vs, zs[i])
         end
     end
-    if !isempty(vs)
+    if length(vs) > 1
         plot!(p, us, vs, color=colors[2], linewidth=5)
     end
     p
@@ -355,7 +355,7 @@ arrow!(r(t0), r'(t0))
 
 
 """
-   `arrow!(p, v)`
+   `arrow!(p, v)`===h
 
 Add the vector `v` to the plot anchored at `p`.
 
