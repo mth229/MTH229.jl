@@ -55,6 +55,7 @@ using Reexport
 @reexport using SymPy
 @reexport using QuadGK
 @reexport using LinearAlgebra
+@reexport using Base.MathConstants
 
 import ForwardDiff
 
