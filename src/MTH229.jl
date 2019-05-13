@@ -288,6 +288,25 @@ function signchart(f, a, b)
 end
 
 
+"""
+   hover(f::Function, a, b, args...; kwargs...)
+
+With `plotly` show tooltip with x-y information
+"""
+function hover(f::Function,a,b,args...; kwargs...)
+    xs = range(a, stop=b, length=251)
+    ys = f.(xs)
+    tooltips = ["($(round(x, digits=2)), $(round(y, digits=2)))" for (x, y) in zip(xs, ys)]
+    plot(xs, ys, args...; hover=tooltips, kwargs...)
+end
+function hover!(f::Function,a,b,args...; kwargs...)
+    xs = range(a, stop=b, length=251)
+    ys = f.(xs)
+    tooltips = ["($(round(x, digits=2)), $(round(y, digits=2)))" for (x, y) in zip(xs, ys)]
+    plot!(xs, ys, args...; hover=tooltips, kwargs...)
+end
+
+
 # visualize newtons method
 function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     xs = Float64[x0]
