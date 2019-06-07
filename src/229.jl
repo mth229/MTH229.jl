@@ -35,6 +35,7 @@ end
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
 D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
+grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
 
 """
 Returns a function describing the tangent line to the graph of f at x=c.
@@ -313,13 +314,50 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
 end
 
 
+# limits of integration
+endpoints(ys,x) = ((f,x) -> isa(f, Function) ? f(x...) : f).(ys, Ref(x))
+# avoid specialization in quadgk
+struct FWrapper
+    f
+end
+(F::FWrapper)(x) = F.f(x)
+
+"""
+fubini(f, dy, dx)
+fubini(f, dz, dy, dx)
+
+Computes numeric integral of `f` over region specified by `dz`, `dy`, `dx`. These are a tuple of values of numbers or univariate functions depending on the value of the term on the right (`dy` can depend on `dx`s value).
+
+
+*Much* slower than `hcubature` from the `HCubature` package, as it refines flat areas too many times, allocates too much, etc. But does allow a more flexible specification of the region to integrate over, as `hcubature` requires box-like regions.
+
+```
+f(x,y,z) = x * y^2 * z^3
+fubini(f, (0,1), (0,2), (0,3))  # int_0^3 int_0^2 int_0^1 f(x,y,z) dz dy dx
+g(v) = f(v...)
+hcubature(g, (0,0,0), (3,2,1))  # same. Not order switched
+
+# triangular like region
+fubini(f, (0, y->y), (0, x->x), (0,3))
+```
+"""
+fubini(f, dx)     = quadgk(FWrapper(f), dx...)[1]
+fubini(f, ys, xs) = fubini(x -> fubini(y -> f(x,y), endpoints(ys, x)), xs)
+fubini(f, zs, ys, xs) = fubini(x ->
+    fubini(y ->
+        fubini(z -> f(x,y,z),
+            endpoints(zs, (x,y))),
+        endpoints(ys,x)),
+    xs)
+
+
 ## 2- and 3-D plotting
 uvec(x) = x / norm(x)
 
 """
-    `xs_ys(vs)`
-    `xs_ys(v1, v2, ...)`
-    `xs_ys(r::Function, a, b)`
+    `unzip(vs)`
+    `unzip(v1, v2, ...)`
+    `unzip(r::Function, a, b)`
 
 Take a vector of points described by vectors (as returned by, say
 `r(t)=[sin(t),cos(t)], r.([1,2,3])`, and return a tuple of collected x
@@ -338,17 +376,24 @@ Examples:
 using Plots
 r(t) = [sin(t), cos(t)]
 rp(t) = [cos(t), -sin(t)]
-plot(xs_ys(r, 0, 2pi)...)  # calls plot(xs, ys)
+plot(unzip(r, 0, 2pi)...)  # calls plot(xs, ys)
 
 t0, t1 = pi/6, pi/4
 
 p, v = r(t0), rp(t0)
-plot!(xs_ys(p, p+v)...)  # connect p to p+v with line
+plot!(unzip(p, p+v)...)  # connect p to p+v with line
 
 p, v = r(t1), rp(t1)
-quiver!(xs_ys([p])..., quiver=xs_ys([v]))
+quiver!(unzip([p])..., quiver=unzip([v]))
 ```
+
+Based on `unzip` from the `Plots` package.
 """
+unzip(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
+unzip(v,vs...) = unzip([v, vs...])
+unzip(r::Function, a, b, n=100) = unzip(r.(range(a, stop=b, length=n)))
+
+
 xs_ys(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
 xs_ys(v,vs...) = xs_ys([v, vs...])
 xs_ys(r::Function, a, b, n=100) = xs_ys(r.(range(a, stop=b, length=n)))
@@ -365,7 +410,7 @@ This would just be a call to `quiver`, but there is no 3-D version of that. As w
 using Plots
 r(t) = [sin(t), cos(t), t]
 rp(t) = [cos(t), -sin(t), 1]
-plot(xs_ys(r, 0, 2pi)...)
+plot(unzip(r, 0, 2pi)...)
 t0 = 1
 arrow!(r(t0), r'(t0))
 ```
@@ -373,7 +418,7 @@ arrow!(r(t0), r'(t0))
 
 
 """
-   `arrow!(p, v)`===h
+   `arrow!(p, v)`
 
 Add the vector `v` to the plot anchored at `p`.
 
@@ -383,19 +428,51 @@ This would just be a call to `quiver`, but there is no 3-D version of that. As w
 using Plots
 r(t) = [sin(t), cos(t), t]
 rp(t) = [cos(t), -sin(t), 1]
-plot(xs_ys(r, 0, 2pi)...)
+plot(unzip(r, 0, 2pi)...)
 t0 = 1
 arrow!(r(t0), r'(t0))
 ```
 """
 function arrow!(plt::Plots.Plot, p, v; kwargs...)
   if length(p) == 2
-     quiver!(plt, xs_ys([p])..., quiver=Tuple(xs_ys([v])); kwargs...)
+     quiver!(plt, unzip([p])..., quiver=Tuple(unzip([v])); kwargs...)
   elseif length(p) == 3
     # 3d quiver needs support
     # https://github.com/JuliaPlots/Plots.jl/issues/319#issue-159652535
     # headless arrow instead
-    plot!(plt, xs_ys(p, p+v)...; kwargs...)
+    plot!(plt, unzip(p, p+v)...; kwargs...)
 	end
 end
 arrow!(p,v;kwargs...) = arrow!(Plots.current(), p, v; kwargs...)
+
+"""
+
+    vectorfieldplot(V; xlim=(-5,5), ylim=(-5,5), n=10; kwargs...)
+
+V is a function that takes a point and returns a vector (2D dimensions), such as `V(x) = x[1]^2 + x[2]^2`.
+
+The grid `xlim × ylim` is paritioned into (n+1) × (n+1) points. At each point, `pt`, a vector proportional to `V(pt)` is drawn.
+
+This is written to add to an existing plot.
+
+```
+plot()  # make a plot
+V(x,y) = [x, y-x]
+vectorfield_plot!(p, V)
+p
+```
+"""
+function vectorfieldplot!(plt, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
+
+    dx, dy = (xlim[2]-xlim[1])/n, (ylim[2]-ylim[1])/n
+    xs, ys = xlim[1]:dx:xlim[2], ylim[1]:dy:ylim[2]
+
+    ps = [[x,y] for x in xs for y in ys]
+    vs = V.(ps)
+    λ = 0.9 * min(dx, dy) /maximum(norm.(vs))
+
+    quiver!(plt, unzip(ps)..., quiver=unzip(λ * vs))
+
+end
+vectorfieldplot!(V; kwargs...) = vectorfieldplot!(Plots.current(), V; kwargs...)
+###

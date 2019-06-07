@@ -21,8 +21,8 @@ using Test
     @test abs(quadgk(x -> x^2, 0, 1)[2]) <= 1e-14
 
     ## SymPy
-    @test limit(x -> sin(x)/x, 0)  ≈ 1
-    @test integrate(sin,  0, pi)  ≈ 2
+    @test limit(x -> sin(x)/x, 0) == 1
+    @test integrate(sin,  0, pi) == 2
 
 
 
@@ -53,9 +53,9 @@ end
 @testset "2d" begin
 
     x = [[1,2,3], [4,5,6]]
-    @test xs_ys(x)[1] == [1, 4]
-    @test xs_ys(x)[2] == [2, 5]
-    @test xs_ys(x)[3] == [3, 6]
+    @test unzip(x)[1] == [1, 4]
+    @test unzip(x)[2] == [2, 5]
+    @test unzip(x)[3] == [3, 6]
 
     @test uvec([2,2]) == 1/sqrt(2) * [1,1]
 
@@ -78,11 +78,13 @@ end
 
         r(t) = [sin(t), cos(t)]
         ts = range(0, stop=pi/2, length=100)
-        plot(xs_ys(r.(ts))...)
+        plot(unzip(r.(ts))...)
         arrow!(r(pi/4), r'(pi/4))
 
-    end
-end
+        V(x,y) = [x, x-y]
+        plot()
+        vectorfieldplot!(V)
 
+    end
 
 end
