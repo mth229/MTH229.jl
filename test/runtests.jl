@@ -46,7 +46,7 @@ end
     @test newton(sin, 3.0)  ≈ pi
 
     @test riemann(sin, 0, pi, 10_000)  ≈ 2
-
+    @test fubini((x,y) -> 1, (x->-sqrt(1-x^2), x->sqrt(1-x^2)), (-1,1)) ≈ pi
 end
 
 
