@@ -66,7 +66,7 @@ import ForwardDiff
 
 ###
 export tangent, secant, D, grad
-export lim,  bisection, riemann
+export lim,  bisection, riemann, fubini
 export plotif, trimplot, signchart, newton_vis
 export uvec, xs_ys, unzip, arrow!, vectorfieldplot!
 
