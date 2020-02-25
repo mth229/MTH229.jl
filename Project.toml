@@ -1,5 +1,7 @@
 name = "MTH229"
 uuid = "ebaf19f5-aa55-568f-9bb2-d6722dad893b"
+license =  "MIT"
+version = "0.2.0"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
@@ -19,3 +21,10 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
+
+
+[compat]
+Plots = "0.27,0.29,0.29"
+Roots = "1.0"
+SymPy = "1.0.5"
+julia = "1.0.0"
