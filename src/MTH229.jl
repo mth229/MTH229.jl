@@ -61,7 +61,6 @@ import ForwardDiff
 
 
 #using Interact
-plotly()
 
 
 ###

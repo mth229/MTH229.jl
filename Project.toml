@@ -1,6 +1,6 @@
 name = "MTH229"
 uuid = "ebaf19f5-aa55-568f-9bb2-d6722dad893b"
-license =  "MIT"
+license = "MIT"
 version = "0.2.0"
 
 [deps]
@@ -14,17 +14,14 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
-
+[compat]
+Plots = "0.27,0.29,0.29"
+Roots = "0.8"
+SymPy = "1.0"
+julia = "1.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test"]
-
-
-[compat]
-Plots = "0.27,0.29,0.29"
-Roots = "0.8"
-SymPy = "1.0.5"
-julia = "1.0.0"
