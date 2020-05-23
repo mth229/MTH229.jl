@@ -175,7 +175,7 @@ function derivative_vi(f::Function, c, a=c-1/2, b=c+1/2)
 	plot!(x -> f(c) + f'(c)*(x-c))
         p
     end
-    
+end    
 
 """
 
