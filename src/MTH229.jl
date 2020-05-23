@@ -33,6 +33,9 @@ The helper functions include:
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
+
+The package `SimplePlots` provides  a quick to load plottinig  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package. 
+
 """
 module MTH229
 
@@ -223,7 +226,7 @@ export newton
 
 #  plot recipe for functions
 function SimplePlots.plot(f::Function, a::Number, b::Number, args...; kwargs...)
-    xs = range(a, b, length=500)
+    xs = range(float(a), float(b), length=500)
     plot(xs, f.(xs), args...; kwargs...)
 end
 
@@ -233,6 +236,13 @@ function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function, args...; k
 end
 SimplePlots.plot!(f::Function, args...; kwargs...) = SimplePlots.plot!(SimplePlots._plot, f, args...; kwargs...)
 
+#  plot reciple  for SymPy objects
+SimplePlots.plot(ex::Sym, a, b,  args...; kwargs...) = plot(lambdify(ex), a, b, args...; kwargs...)
+SimplePlots.plot!(ex::Sym, args...; kwargs...)    = plot!(lambdify(x), args..., kwargs...)
+
+##
+## --------------------------------------------------
+##
 
 """
    trimplot(f, a, b, c=20; kwargs...)
@@ -326,6 +336,9 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     p
 end
 
+##
+## --------------------------------------------------
+##
 
 """
 riemann: compute Riemann sum approximations to a definite integral. As well, implement trapezoid and Simpson's rule.
@@ -396,8 +409,6 @@ fubini(f, zs, ys, xs) = fubini(x ->
     xs)
 
 ##################################################
-#import SymPy: real_roots
-#real_roots(f; kwargs...) = PolynomialZeros.poly_roots(f, Over.R, kwargs...)
 
 uvec(x) = x / norm(x)
 
@@ -505,7 +516,7 @@ function vectorfieldplot!(plt, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
 end
 vectorfieldplot!(V; kwargs...) = vectorfieldplot!(SimplePlots.current(), V; kwargs...)
 ###
-#include("demos.jl")
+include("demos.jl")
 
 
 end

@@ -1,6 +1,3 @@
-using Reactive
-using Interact
-
 export trim_viz, function_viz, fzeros_viz,
        bisection_viz, limit_viz, 
        derivative_viz, critical_pts_viz,
@@ -229,12 +226,12 @@ function riemann_viz(f::Function, a, b)
         n = 2^j
         val = riemann(f, a, b, n)
         act_val = quadgk(f, a, b)[1]
-        err = abs(val - act_val)
-        e = Int(round(log2(1 / abs(val - act_val)), 0))
-        p = plot(f, a, b, linewidth=3, legend=false, title="Riemann sum with n=2^$j: $(round(val,3)). Error is about 2^(-$e)")
+        err = abs(val .- act_val)
+        e = Int(round(log2(1 / abs(val .- act_val)), digits=0))
+        p = plot(f, a, b, linewidth=3, legend=false, title="Riemann sum with n=2^$j: $(round(val,digits=3)). Error is about 2^(-$e)")
         delta = (b-a)/n
         for i in 1:n
-            plot!(p, a + delta * [i-1, i, i, i-1, i-1], f(a + i * delta) * [0,0,1,1,0], color=:blue)
+            plot!(a .+ delta .* [i-1, i, i, i-1, i-1], f.(a .+ i * delta) .* [0,0,1,1,0], color=:blue)
         end
         p
     end
