@@ -57,13 +57,13 @@ function_viz(sin, a, b)
 ```
 """
 function function_viz(f::Function, a=-5, b=5)
-    @manipulate for u in ["positive", "increasing", "concave up"]
+    @demo for u in ["positive", "increasing", "concave up"]
         if u == "positive"
             p = plotif(f, f, a, b, title="Highlighting where f > 0")
         elseif u == "increasing"
-            p = plotif(f, D(f), a, b, title="Showng where f' > 0")
+            p = plotif(f, f', a, b, title="Highlighting where f' > 0")
         else
-            p = plotif(f, D(f,2), a, b, title="Showing where f'' > 0")
+            p = plotif(f, f'', a, b, title="Highlighting where f'' > 0")
         end
         p
     end
@@ -120,8 +120,9 @@ function bisection_viz(f, a, b)
         if cvged
             scatter!(p, [rt], [0], markersize=6)
         else
-            plot!(p, [a, (a + b)/2], [0,0], linewidth=3)
-            plot!(p, [(a + b)/2, b], [0,0], linewidth=3)
+            l =  f(a)*f((a+b)/2) <  0
+            plot!(p, [a, (a + b)/2], [0,0], linewidth=5, color=colors[1+ l])
+            plot!(p, [(a + b)/2, b], [0,0], linewidth=5, color=colors[1+ !l])
         end
         p
     end
