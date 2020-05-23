@@ -315,26 +315,6 @@ end
 
 
 
-# visualize newtons method
-function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
-    xs = Float64[x0]
-    for i in 1:steps
-        push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
-    end
-
-    m,M = extrema(xs)
-    m = min(m, a)
-    M = max(M, b)
-
-    p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
-    plot!(p, zero, m, M)
-    for i in 1:steps
-        plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
-        scatter!(p, xs[i:i],[0])
-    end
-    scatter!(p, [xs[steps+1]], [0])
-    p
-end
 
 ##
 ## --------------------------------------------------

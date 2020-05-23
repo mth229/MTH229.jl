@@ -92,7 +92,7 @@ bisection_viz(sin, 3, 4)
 function bisection_viz(f, a, b)
     lo,hi = a, b
     rt = fzero(f, lo, hi)
-
+    colors=(1,2)
     @manipulate for n=slider(1:8, value=1, label="n")
         cvged = false
         a,b = lo, hi
@@ -140,7 +140,7 @@ function limit_viz(f::Function, c, dir="+")
         h = (dir == "+" ? (1/2)^i : -(1/2)^i)
         s = (dir == "+" ? "+" : "-")
         val = f(c + h)
-        plot(f, c-1, c + 1, linewidth=3, title="At c $s (1/2)^$i f is $(round(val,3))", legend=false)
+        plot(f, c-1, c + 1, linewidth=3, title="At c $s (1/2)^$i f is $(round(val,digits=3))", legend=false)
         plot!([c-1, c+1], L * [1,1])
         plot!([c-1, c+1], val * [1,1])
         scatter!([c+h], [f(c+h)], markersize=3)
@@ -160,24 +160,22 @@ Example:
 derivative_viz(sin, pi/4)
 ```
 """
-function derivative_viz(f::Function, c, a=c-1/2, b=c+1/2)
+function derivative_vi(f::Function, c, a=c-1/2, b=c+1/2)
     
     @manipulate for j in slider(1:8, value=1, label="h=(1/2)^i")
 	h = (1/2)^j
         m = (f(c + h) - f(c)) / h
         err = abs(f'(c) - m)
-        e = Int(round(log2(1 / err), 0))
+        e = Int(round(log2(1 / err), digits=0))
 
 	p = plot(f, a, b, title="Plotting secant line with h=(1/2)^$j, error is about (1/2)^(-$e)", linewidth=3, legend=false)
 	m = (f(c + h) - f(c)) / h
-	plot!(p, x -> f(c) + m * (x-c), a, b, linewidth=3)
-        scatter!(p, [c, c+h], [f(c), f(c+h)], markersize=3)
-#	plot!(p, x -> f(c) + f'(c)*(x-c))
+	plot!(x -> f(c) + m * (x-c), linewidth=3)
+        scatter!([c, c+h], [f(c), f(c+h)], markersize=3)
+	plot!(x -> f(c) + f'(c)*(x-c))
         p
     end
     
-end
-
 
 """
 
@@ -191,6 +189,27 @@ function critical_pts_viz(f::Function, a, b)
     zs = fzeros(f', a, b)
     plot(f, a, b, legend=false)
     scatter!(zs, f.(zs))
+end
+
+# visualize newtons method
+function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
+    xs = Float64[x0]
+    for i in 1:steps
+        push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
+    end
+
+    m,M = extrema(xs)
+    m = min(m, a)
+    M = max(M, b)
+
+    p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
+    plot!(p, zero)
+    for i in 1:steps
+        plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
+        scatter!(p, xs[i:i],[0])
+    end
+    scatter!(p, [xs[steps+1]], [0])
+    p
 end
 
 
@@ -231,7 +250,7 @@ function riemann_viz(f::Function, a, b)
         p = plot(f, a, b, linewidth=3, legend=false, title="Riemann sum with n=2^$j: $(round(val,digits=3)). Error is about 2^(-$e)")
         delta = (b-a)/n
         for i in 1:n
-            plot!(a .+ delta .* [i-1, i, i, i-1, i-1], f.(a .+ i * delta) .* [0,0,1,1,0], color=:blue)
+            plot!(a .+ delta .* [i-1, i, i, i-1, i-1], f.(a .+ i * delta) .* [0,0,1,1,0], color=1)
         end
         p
     end
