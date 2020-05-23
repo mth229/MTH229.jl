@@ -237,8 +237,8 @@ end
 SimplePlots.plot!(f::Function, args...; kwargs...) = SimplePlots.plot!(SimplePlots._plot, f, args...; kwargs...)
 
 #  plot reciple  for SymPy objects
-SimplePlots.plot(ex::Sym, a, b,  args...; kwargs...) = plot(lambdify(ex), a, b, args...; kwargs...)
-SimplePlots.plot!(ex::Sym, args...; kwargs...)    = plot!(lambdify(x), args..., kwargs...)
+SimplePlots.plot(ex::Sym, a::Number, b::Number,  args...; kwargs...) = plot(lambdify(ex), a, b, args...; kwargs...)
+SimplePlots.plot!(ex::Sym, args...; kwargs...)    = plot!(lambdify(ex), args..., kwargs...)
 
 ##
 ## --------------------------------------------------
