@@ -1,3 +1,5 @@
+import SimplePlots: @manipulate, @demo
+
 export trim_viz, function_viz, fzeros_viz,
        bisection_viz, limit_viz, 
        derivative_viz, critical_pts_viz,
