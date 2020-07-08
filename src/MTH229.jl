@@ -59,7 +59,8 @@ import ForwardDiff
 using Requires
 
 function __init__()
-    @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("plotting.jl")
+    @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
+    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
 end
 
 

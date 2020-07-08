@@ -2,11 +2,13 @@ import SimplePlots: plot, plot!, scatter, scatter!
 
 # some plotting utilities
 export plotif, trimplot, signchart
-export  arrow!, vectorfieldplot!
+export arrow!, vectorfieldplot!
 export newton_vis
 
+###
+include("demos.jl")
 
-#  plot recipe for functions
+#  plot "recipe" for functions
 function SimplePlots.plot(f::Function, a::Number, b::Number, args...; kwargs...)
     xs = range(float(a), float(b), length=500)
     plot(xs, f.(xs), args...; kwargs...)
@@ -48,6 +50,54 @@ function trimplot(f, a, b, c=20; kwargs...)
  length(us) > 0 && plot!(p, us, vs, color=1)
  p
 end
+
+
+
+"""
+    plotif(f, g, a, b)
+
+Plot f colored depending on g >= 0 or not.
+"""
+function plotif(f, g, a, b, args...; colors=(1,2), linewidth=5, legend=false,  kwargs... )
+
+
+    xs = a:(b-a)/251:b
+    zs = f.(xs)
+    p = plot(xs, f.(xs), args...; color=colors[1], linewidth=linewidth, legend=legend, kwargs...)
+
+    ys = g.(xs)
+    ys[ys .< 0] .= NaN
+
+    us,vs = Float64[], Float64[]
+    for (i,y) in enumerate(ys)
+        if isnan(y)
+            if length(vs) > 1
+                plot!(p, us, vs, color=colors[2], linewidth=5)
+            end
+            empty!(us)
+            empty!(vs)
+        else
+            push!(us, xs[i])
+            push!(vs, zs[i])
+        end
+    end
+    if length(vs) > 1
+        plot!(p, us, vs, color=colors[2], linewidth=5)
+    end
+    p
+end
+
+"""
+   signchart(f, a, b)
+
+Plot f over a,b with different color when negative.
+"""
+function signchart(f, a, b)
+    p = plotif(f, f, a, b)
+    plot!(p, zero)
+    p
+end
+
 
 
 """
@@ -109,52 +159,4 @@ function vectorfieldplot!(plt, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
 
 end
 vectorfieldplot!(V; kwargs...) = vectorfieldplot!(SimplePlots.current(), V; kwargs...)
-###
-include("demos.jl")
-
-
-"""
-    plotif(f, g, a, b)
-
-Plot f colored depending on g >= 0 or not.
-"""
-function plotif(f, g, a, b, args...; colors=(1,2), linewidth=5, legend=false,  kwargs... )
-
-
-    xs = a:(b-a)/251:b
-    zs = f.(xs)
-    p = plot(xs, f.(xs), args...; color=colors[1], linewidth=linewidth, legend=legend, kwargs...)
-
-    ys = g.(xs)
-    ys[ys .< 0] .= NaN
-
-    us,vs = Float64[], Float64[]
-    for (i,y) in enumerate(ys)
-        if isnan(y)
-            if length(vs) > 1
-                plot!(p, us, vs, color=colors[2], linewidth=5)
-            end
-            empty!(us)
-            empty!(vs)
-        else
-            push!(us, xs[i])
-            push!(vs, zs[i])
-        end
-    end
-    if length(vs) > 1
-        plot!(p, us, vs, color=colors[2], linewidth=5)
-    end
-    p
-end
-
-"""
-   signchart(f, a, b)
-
-Plot f over a,b with different color when negative.
-"""
-function signchart(f, a, b)
-    p = plotif(f, f, a, b)
-    plot!(p, zero)
-    p
-end
 

@@ -1,4 +1,5 @@
-import SimplePlots: @manipulate, @demo
+using SimplePlots
+#import SimplePlots: @manipulate, @demo, slider, observe
 
 export trim_viz, function_viz, fzeros_viz,
        bisection_viz, limit_viz, 
