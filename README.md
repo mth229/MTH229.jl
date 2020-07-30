@@ -8,7 +8,9 @@ This is installed with
 ] add https://github.com/mth229/MTH229.jl
 ```
 
-This should also install several other packages we make use of (`Roots`, `Plots`, `SymPy`)
+This should also install several other packages we make use of (`Roots`, `SymPy`)
+
+A plotting pacakge must be installed, among `Plots`, `SimplePlots`, or `Makie`.
 
 
 To use this package we have:
@@ -17,14 +19,10 @@ To use this package we have:
 using MTH229
 ```
 
+Optionally, a plotting package can be loaded.
+
 To find out what is in the package read the help page for the package:
 
 ```
 ?MTH229
-```
-
-If installation fails, then this command will pull in the necessary functions:
-
-```noeval
-include(download("https://raw.githubusercontent.com/mth229/MTH229.jl/master/src/229.jl"))
 ```
