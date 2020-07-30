@@ -20,9 +20,52 @@ function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function, args...; k
 end
 SimplePlots.plot!(f::Function, args...; kwargs...) = SimplePlots.plot!(SimplePlots._plot, f, args...; kwargs...)
 
+
+#  plot "recipe" for parametric functions
+function SimplePlots.plot(f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
+    xs = range(float(a), float(b), length=500)
+    plot(f.(xs), g.(xs), args...; kwargs...)
+end
+
+function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
+    xs = range(a, stop=b, length=500)
+    plot!(plt, xs, f.(xs), args...;  kwargs...)
+end
+SimplePlots.plot!(f::Function, g::Function, a::Number, b::Number, args...; kwargs...) = SimplePlots.plot!(SimplePlots._plot, f, g, a, b, args...; kwargs...)
+
+
+
 #  plot reciple  for SymPy objects
-SimplePlots.plot(ex::Sym, a::Number, b::Number,  args...; kwargs...) = plot(lambdify(ex), a, b, args...; kwargs...)
-SimplePlots.plot!(ex::Sym, args...; kwargs...)    = plot!(lambdify(ex), args..., kwargs...)
+SimplePlots.plot(ex::Sym, a::Number, b::Number; kwargs...) = plot(lambdify(ex), a, b; kwargs...)
+SimplePlots.plot!(ex::Sym; kwargs...)    = plot!(lambdify(ex); kwargs...)
+
+SimplePlots.plot(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) = plot(lambdify(ex1), lambdify(ex2), a, b; kwargs...)
+SimplePlots.plot!(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) =
+    plot!(lambdify(ex1), lambdify(ex2), a,b; kwargs...)
+
+
+# Plot of tuple 
+function SimplePlots.plot(fs::Tuple, a::Number, b::Number; kwargs...)
+
+    xs = range(a, stop=b, length=500)
+    ys = [ [f(x) for x in xs] for f in fs]
+    if length(ys) == 1
+        plot(xs, ys[1]; kwargs...)
+    else
+        plot(ys...; kwargs...)
+    end
+end
+
+function SimplePlots.plot!(fs::Tuple, args...; kwargs...)
+    if length(fs) == 1
+        xs = plt.data[1]["x"]
+        plot!(xs, fs[1].(xs); kwargs...)
+    else
+        xs = range(args[1], stop=args[2], length=500)
+        ys = [ [f(x) for x in xs] for f in fs]
+        plot!(ys...; kwargs...)
+    end
+end
 
 ##
 ## --------------------------------------------------

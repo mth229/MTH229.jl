@@ -4,7 +4,7 @@
 
 This module does two things:
 
-* Install other useful packages with one command (`SimplePlots`, `Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
+* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
 
 * Add a number of helper functions.
 
@@ -27,7 +27,9 @@ The helper functions include:
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
 
-The package `SimplePlots` provides  a quick to load plottinig  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package. 
+This package provides some plotting routines for `Plots`, `SimplePlots`, and `Makie`. For the latter two, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
+
+The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
 
 """
 module MTH229
@@ -52,8 +54,6 @@ using Reexport
 @reexport using QuadGK
 @reexport using LinearAlgebra
 @reexport using Base.MathConstants
-#@reexport using SimplePlots
-#using  SimplePlots
 import ForwardDiff
 
 using Requires
@@ -61,6 +61,7 @@ using Requires
 function __init__()
     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
+    @require Makie="ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" include("makie.jl")
 end
 
 
@@ -332,10 +333,11 @@ quiver!(unzip([p])..., quiver=unzip([v]))
 
 Based on `unzip` from the `Plots` package.
 """
-unzip(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
+unzip(vs) = Tuple([vs[j][i] for j in eachindex(vs)] for i in eachindex(vs[1]))
 unzip(v,vs...) = unzip([v, vs...])
 unzip(r::Function, a, b, n=100) = unzip(r.(range(a, stop=b, length=n)))
 
+# alternate, should deprecate
 xs_ys(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
 xs_ys(v,vs...) = xs_ys([v, vs...])
 xs_ys(r::Function, a, b, n=100) = xs_ys(r.(range(a, stop=b, length=n)))

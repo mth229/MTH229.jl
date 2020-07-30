@@ -13,21 +13,21 @@ export newton_vis
 Plot f over [a,b] but break graph if it exceeds c in absolute value.
 """
 function trimplot(f, a, b, c=20; kwargs...)
-  xs = range(a, stop=b, length=251)
-  ys = f.(xs)
-
-  us, vs = Real[NaN], Real[NaN]
-  p = plot(us, vs, xlim=(a, b), legend=false, kwargs...)
-  for (x,y) in zip(xs, ys)
-    if abs(y) <= c
-       push!(us, x); push!(vs, y)
-    else
-      length(us) > 0 && plot!(p, us, vs, color=1)
-      empty!(us); empty!(vs)
+    xs = range(a, stop=b, length=251)
+    ys = f.(xs)
+    
+    us, vs = Real[NaN], Real[NaN]
+    p = Plots.plot(us, vs, xlim=(a, b), legend=false, kwargs...)
+    for (x,y) in zip(xs, ys)
+        if abs(y) <= c
+            push!(us, x); push!(vs, y)
+        else
+            length(us) > 0 && plot!(p, us, vs, color=1)
+            empty!(us); empty!(vs)
+        end
     end
- end
- length(us) > 0 && plot!(p, us, vs, color=1)
- p
+    length(us) > 0 && Plots.plot!(p, us, vs, color=1)
+    p
 end
 
 
@@ -41,7 +41,7 @@ function plotif(f, g, a, b, args...; colors=(1,2), linewidth=5, legend=false,  k
 
     xs = a:(b-a)/251:b
     zs = f.(xs)
-    p = plot(xs, f.(xs), args...; color=colors[1], linewidth=linewidth, legend=legend, kwargs...)
+    p = Plots.plot(xs, f.(xs), args...; color=colors[1], linewidth=linewidth, legend=legend, kwargs...)
 
     ys = g.(xs)
     ys[ys .< 0] .= NaN
@@ -50,7 +50,7 @@ function plotif(f, g, a, b, args...; colors=(1,2), linewidth=5, legend=false,  k
     for (i,y) in enumerate(ys)
         if isnan(y)
             if length(vs) > 1
-                plot!(p, us, vs, color=colors[2], linewidth=5)
+                Plots.plot!(p, us, vs, color=colors[2], linewidth=5)
             end
             empty!(us)
             empty!(vs)
@@ -60,7 +60,7 @@ function plotif(f, g, a, b, args...; colors=(1,2), linewidth=5, legend=false,  k
         end
     end
     if length(vs) > 1
-        plot!(p, us, vs, color=colors[2], linewidth=5)
+        Plots.plot!(p, us, vs, color=colors[2], linewidth=5)
     end
     p
 end
@@ -72,7 +72,7 @@ Plot f over a,b with different color when negative.
 """
 function signchart(f, a, b)
     p = plotif(f, f, a, b)
-    plot!(p, zero)
+    Plots.plot!(p, zero)
     p
 end
 
@@ -97,12 +97,12 @@ arrow!(r(t0), r'(t0))
 """
 function arrow!(plt, p, v; kwargs...)
   if length(p) == 2
-     quiver!(plt, unzip([p])..., quiver=Tuple(unzip([v])); kwargs...)
+      Plots.quiver!(plt, unzip([p])..., quiver=Tuple(unzip([v])); kwargs...)
   elseif length(p) == 3
     # 3d quiver needs support
     # https://github.com/JuliaPlots/Plots.jl/issues/319#issue-159652535
     # headless arrow instead
-    plot!(plt, unzip(p, p+v)...; kwargs...)
+      Plots.plot!(plt, unzip(p, p+v)...; kwargs...)
 	end
 end
 arrow!(p,v;kwargs...) = arrow!(Plots.current(), p, v; kwargs...)
@@ -133,8 +133,32 @@ function vectorfieldplot!(plt, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
     vs = V.(ps)
     λ = 0.9 * min(dx, dy) /maximum(norm.(vs))
 
-    quiver!(plt, unzip(ps)..., quiver=unzip(λ * vs))
+    Plots.quiver!(plt, unzip(ps)..., quiver=unzip(λ * vs))
 
 end
 vectorfieldplot!(V; kwargs...) = vectorfieldplot!(Plots.current(), V; kwargs...)
+
+
+
+##
+# visualize newtons method
+function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
+    xs = Float64[x0]
+    for i in 1:steps
+        push!(xs, xs[end] - f(xs[end]) / f'(xs[end]))
+    end
+
+    m,M = extrema(xs)
+    m = min(m, a)
+    M = max(M, b)
+
+    p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
+    plot!(p, zero)
+    for i in 1:steps
+        plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
+        scatter!(p, xs[i:i],[0])
+    end
+    scatter!(p, [xs[steps+1]], [0])
+    p
+end
 
