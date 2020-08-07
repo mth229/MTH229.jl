@@ -46,6 +46,10 @@ module MTH229
 # @info msg
 
 
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@optlevel"))
+    @eval Base.Experimental.@optlevel 1
+end
+
 
 using Reexport
 @reexport using Roots
@@ -75,7 +79,12 @@ export uvec, xs_ys, unzip
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
-D(f, n=1) = n > 1 ? D(D(f), n-1) : x -> ForwardDiff.derivative(f, float(x))
+function D(f, n::Int=1)
+    n < 0 && throw(ArgumentError("n must be non-negative"))
+    n == 0 && return f
+    n == 1 && return x -> ForwardDiff.derivative(f, float(x))
+    D(D(f), n-1)
+end
 grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
 # could aslo wrap as function ForwardDiff.jacobian, ForwardDiff.hessian
 
