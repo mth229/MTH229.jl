@@ -14,11 +14,16 @@ function SimplePlots.plot(f::Function, a::Number, b::Number, args...; kwargs...)
     plot(xs, f.(xs), args...; kwargs...)
 end
 
-function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function, args...; kwargs...)
-    xs = plt.data[1]["x"]
-    plot!(plt, xs, f.(xs), args...;  kwargs...)
+function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function, a::Number, b::Number, args...;  kwargs...)
+    xs = range(float(a), float(b), length=500)
+    plot!(plt, xs, f.(xs);  kwargs...)
 end
 SimplePlots.plot!(f::Function, args...; kwargs...) = SimplePlots.plot!(SimplePlots._plot, f, args...; kwargs...)
+
+function  SimplePlots.plot!(plt::SimplePlots.SimplePlot, f::Function;  kwargs...)
+    xs = plt.data[1]["x"]
+    plot!(plt, xs, f.(xs);  kwargs...)
+end
 
 
 #  plot "recipe" for parametric functions

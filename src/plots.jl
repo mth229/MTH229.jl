@@ -152,13 +152,13 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     m = min(m, a)
     M = max(M, b)
 
-    p = plot(f, m, M; linewidth=3, legend=false, kwargs...)
-    plot!(p, zero)
+    p = Plots.plot(f, m, M; linewidth=3, legend=false, kwargs...)
+    Plots.plot!(p, zero)
     for i in 1:steps
-        plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
-        scatter!(p, xs[i:i],[0])
+        Plots.plot!(p, [xs[i],xs[i],xs[i+1]], [0,f(xs[i]), 0])
+        Plots.scatter!(p, xs[i:i],[0])
     end
-    scatter!(p, [xs[steps+1]], [0])
+    Plots.scatter!(p, [xs[steps+1]], [0])
     p
 end
 
