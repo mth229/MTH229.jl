@@ -13,6 +13,7 @@ Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 SimplePlots = "307c2aad-90be-4152-b348-f51955fac6ce"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
+ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
 
 [compat]
 Roots = "1.0"
