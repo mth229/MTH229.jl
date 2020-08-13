@@ -67,8 +67,6 @@ function __init__()
     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
 end
 
-include("downloads.jl")
-
 ###
 export tangent, secant, D, grad
 export lim
