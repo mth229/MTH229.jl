@@ -72,7 +72,7 @@ export tangent, secant, D, grad
 export lim
 export bisection, newton
 export riemann, fubini
-export uvec, xs_ys, unzip
+export uvec, xs_ys, unzip, parametric_grid
 
 
 " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
@@ -349,6 +349,16 @@ xs_ys(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
 xs_ys(v,vs...) = xs_ys([v, vs...])
 xs_ys(r::Function, a, b, n=100) = xs_ys(r.(range(a, stop=b, length=n)))
 
+"""
+    parametric_grid(us, vs, r)
+
+Create matrices for `xs`, `ys`, `zs` from `r(u,v) = [x(u,v), y(u,v), z(u,v)]`
+
+Used to plot parametrically defined surfaces.
+"""
+function parametric_grid(us, vs, r)
+    unzip(r.(us, vs'))
+end
 
 
 end

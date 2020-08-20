@@ -1,7 +1,5 @@
 import Makie: plot, plot!, scatter, scatter!
 
-@info "Loading some plot recipes for Makie"
-
 # some plotting utilities
 export plotif, trimplot, signchart
 export arrow!, vectorfieldplot!
@@ -27,7 +25,7 @@ end
 Makie.plot!(f::Function, args...; kwargs...) = Makie.plot!(Makie.AbstractPlotting.current_scene(), f, args...; kwargs...)
 
 
-#  plot "recipe" for parametric functions
+#  plot "recipe" for 2D parametric functions
 function Makie.plot(f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
     xs = range(float(a), float(b), length=500)
     Makie.lines(f.(xs), g.(xs), args...; kwargs...)
@@ -70,6 +68,43 @@ function Makie.plot!(fs::Tuple, args...; kwargs...)
     ys = [ [f(x) for x in xs] for f in fs]
     Makie.plot!(ys...; kwargs...)
 end
+
+
+## Parametric surface plot
+using GeometryBasics
+function make_vertices(r, xs, ys)
+    [Point3f0(r(u,v))  for v in ys for u in xs]
+end
+
+# single row of faces
+function make_facesⱼ(xs, ys, j)
+    nx, ny = length(xs), length(ys)
+    geti = (i,j) -> (j-1)*nx + (i-1) + 1
+    faces = TriangleFace{Int}[]
+    for i in 1:nx-1
+        f1 = TriangleFace(geti(i,j), geti(i,j+1), geti(i+1,j+1))
+        f2 = TriangleFace(geti(i+1,j+1), geti(i,j), geti(i+1,j))        
+        append!(faces, (f1, f2))
+    end
+
+    faces
+end
+
+
+parametric_surface_plot(r, xs, ys; kwargs...) = parametric_surface_plot!(Scene(), r, xs, ys; kwargs...)
+function parametric_surface_plot!(scene, r, xs, ys; kwargs...)
+    nx, ny = length(xs), length(ys)
+
+    vertices = make_vertices(r, xs, ys)
+
+    for j in 1:ny-1
+        facesⱼ =  make_facesⱼ(xs, ys, j)
+        wireframe!(scene, GeometryBasics.Mesh(vertices, facesⱼ); kwargs...)
+    end
+
+    scene
+end
+export parametric_surface_plot, parametric_surface_plot!
 
 ##
 ## --------------------------------------------------
