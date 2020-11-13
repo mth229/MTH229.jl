@@ -343,6 +343,7 @@ Based on `unzip` from the `Plots` package.
 unzip(vs) = Tuple([vs[j][i] for j in eachindex(vs)] for i in eachindex(vs[1]))
 unzip(v,vs...) = unzip([v, vs...])
 unzip(r::Function, a, b, n=100) = unzip(r.(range(a, stop=b, length=n)))
+# unzip(a) = map(x -> getfield.(a, x), fieldnames(eltype(a)))
 
 # alternate, should deprecate
 xs_ys(vs) = (A=hcat(vs...); Tuple([A[i,:] for i in eachindex(vs[1])]))
@@ -359,6 +360,37 @@ Used to plot parametrically defined surfaces.
 function parametric_grid(us, vs, r)
     unzip(r.(us, vs'))
 end
+
+
+# for plotif. This identifies a vector of colors
+function identify_colors(g, xs, colors=(:red, :blue, :black))
+    F = (a,b) -> begin
+        ga,gb=g(a),g(b)
+        ga * gb < 0 && return nothing
+        ga >= 0 && return true
+        return false
+    end
+    find_colors(F, xs, colors)
+end
+
+# F(a,b) returns true, false, or nothing
+function find_colors(F, xs, colors=(:red, :blue, :black))
+    n = length(xs) 
+    cols = repeat([colors[1]], n-1)
+    for i in 1:n-1
+        a,b = xs[i], xs[i+1]
+        val = F(a,b)
+        if val == nothing
+            cols[i] = colors[3]
+        elseif val
+            cols[i] = colors[1]
+        else
+            cols[i] = colors[2]
+        end
+    end
+    cols
+end
+
 
 
 end

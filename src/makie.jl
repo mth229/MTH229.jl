@@ -1,4 +1,4 @@
-import Makie: plot, plot!, scatter, scatter!
+import AbstractPlotting: plot, plot!, scatter, scatter!
 
 # some plotting utilities
 export plotif, trimplot, signchart
@@ -10,63 +10,63 @@ export newton_vis
 #  plot "recipe" for functions
 
 
-function Makie.plot(f::Function, a::Number, b::Number, args...; kwargs...)
-    xs = range(float(a), float(b), length=500)
-    Makie.plot(xs, f.(xs), args...; kwargs...)
+function AbstractPlotting.plot(f::Function, a::Number, b::Number, args...; kwargs...)
+    xs = range(a, b, length=251)
+    AbstractPlotting.plot(xs, f.(xs), args...; kwargs...)
 end
 
-function  Makie.plot!(scene::Makie.AbstractPlotting.Scene, f::Function, args...; kwargs...)
+function  AbstractPlotting.plot!(scene::AbstractPlotting.Scene, f::Function, args...; kwargs...)
     rect = scene.data_limits[]
     a, b = rect.origin[1],  rect.origin[1] + rect.widths[1]
     xs = range(a, b, length=500)
-    Makie.plot!(scene, xs, f.(xs), args...;  kwargs...)
+    AbstractPlotting.plot!(scene, a..b, f, args...;  kwargs...)
 end
 
-Makie.plot!(f::Function, args...; kwargs...) = Makie.plot!(Makie.AbstractPlotting.current_scene(), f, args...; kwargs...)
+AbstractPlotting.plot!(f::Function, args...; kwargs...) = AbstractPlotting.plot!(AbstractPlotting.current_scene(), f, args...; kwargs...)
 
 
 #  plot "recipe" for 2D parametric functions
-function Makie.plot(f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
+function AbstractPlotting.plot(f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
     xs = range(float(a), float(b), length=500)
-    Makie.lines(f.(xs), g.(xs), args...; kwargs...)
+    AbstractPlotting.lines(f.(xs), g.(xs), args...; kwargs...)
 end
 
-function  Makie.plot!(scene::Makie.AbstractPlotting.Scene, f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
+function  AbstractPlotting.plot!(scene::AbstractPlotting.Scene, f::Function, g::Function, a::Number, b::Number, args...; kwargs...)
     xs = range(a, stop=b, length=500)
-    Makie.plot!(scene, f.(xs), g.(xs), args...;  kwargs...)
+    AbstractPlotting.plot!(scene, f.(xs), g.(xs), args...;  kwargs...)
 end
-Makie.plot!(f::Function, g::Function, a::Number, b::Number, args...; kwargs...) =
-    Makie.plot!(Makie.AbstractPlotting.current_scene(), f, g, a, b, args...; kwargs...)
+AbstractPlotting.plot!(f::Function, g::Function, a::Number, b::Number, args...; kwargs...) =
+    AbstractPlotting.plot!(AbstractPlotting.current_scene(), f, g, a, b, args...; kwargs...)
 
 
 
 #  plot reciple  for SymPy objects
-Makie.plot(ex::Sym, a::Number, b::Number; kwargs...) = Makie.plot(lambdify(ex), a, b; kwargs...)
-Makie.plot!(ex::Sym; kwargs...) = Makie.plot!(lambdify(ex); kwargs...)
+AbstractPlotting.plot(ex::Sym, a::Number, b::Number; kwargs...) = AbstractPlotting.plot(lambdify(ex), a, b; kwargs...)
+AbstractPlotting.plot!(ex::Sym; kwargs...) = AbstractPlotting.plot!(lambdify(ex); kwargs...)
 
-Makie.plot(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) =
-    Makie.plot(lambdify(ex1), lambdify(ex2), a, b; kwargs...)
-Makie.plot!(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) =
-    Makie.plot!(lambdify(ex1), lambdify(ex2), a,b; kwargs...)
+AbstractPlotting.plot(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) =
+    AbstractPlotting.plot(lambdify(ex1), lambdify(ex2), a, b; kwargs...)
+AbstractPlotting.plot!(ex1::Sym, ex2::Sym,  a::Number, b::Number; kwargs...) =
+    AbstractPlotting.plot!(lambdify(ex1), lambdify(ex2), a,b; kwargs...)
 
 
 # Plot of tuple
 # d= 1
 # d>1 parametric
-function Makie.plot(fs::Tuple, a::Number, b::Number; kwargs...)
+function AbstractPlotting.plot(fs::Tuple, a::Number, b::Number; kwargs...)
     xs = range(a, stop=b, length=500)
     ys = [ [f(x) for x in xs] for f in fs]
     if length(ys) == 1
-        Makie.lines(xs, ys[1]; kwargs...)
+        AbstractPlotting.lines(xs, ys[1]; kwargs...)
     else
-        Makie.lines(ys...; kwargs...)
+        AbstractPlotting.lines(ys...; kwargs...)
     end
 end
 
-function Makie.plot!(fs::Tuple, args...; kwargs...)
+function AbstractPlotting.plot!(fs::Tuple, args...; kwargs...)
     xs = range(args[1], stop=args[2], length=500)
     ys = [ [f(x) for x in xs] for f in fs]
-    Makie.plot!(ys...; kwargs...)
+    AbstractPlotting.plot!(ys...; kwargs...)
 end
 
 
@@ -127,33 +127,11 @@ end
 
 Plot f colored depending on g >= 0 or not.
 """
-function plotif(f, g, a, b, args...; colors=(:red, :blue), linewidth=5, kwargs... )
-
-
-    xs = a:(b-a)/251:b
-    zs = f.(xs)
-    p = plot(xs, f.(xs), args...; color=colors[1], linewidth=linewidth, kwargs...)
-
-    ys = g.(xs)
-    ys[ys .< 0] .= NaN
-
-    us,vs = Float64[], Float64[]
-    for (i,y) in enumerate(ys)
-        if isnan(y)
-            if length(vs) > 1
-                plot!(p, us, vs, color=colors[2], linewidth=5)
-            end
-            empty!(us)
-            empty!(vs)
-        else
-            push!(us, xs[i])
-            push!(vs, zs[i])
-        end
-    end
-    if length(vs) > 1
-        plot!(p, us, vs, color=colors[2], linewidth=5)
-    end
-    p
+function plotif(f, g, a, b)
+    xs = range(a, b, length=251)
+    cols = identify_colors(g, xs)
+    cols = push!(cols, cols[end])
+    lines(xs, f, color=cols, linewidth=10)
 end
 
 """
@@ -177,7 +155,7 @@ Add the vector `v` to the plot anchored at `p`.
 This would just be a call to `quiver`, but there is no 3-D version of that. As well, the syntax for quiver is a bit awkward for plotting just a single arrow. (Though efficient if plotting many).
 
 ```
-using Makie
+using AbstractPlotting
 r(t) = [sin(t), cos(t), t]
 rp(t) = [cos(t), -sin(t), 1]
 lines(unzip(r, 0, 2pi)...)
@@ -185,11 +163,11 @@ t0 = 1
 arrow!(r(t0), r'(t0))
 ```
 """
-function arrow!(scene::Makie.AbstractPlotting.Scene, p, v; kwargs...)
+function arrow!(scene::AbstractPlotting.Scene, p, v; kwargs...)
     P = length(p) == 3 ? Point3f0 : Point2f0
-    Makie.arrows!(P.([p]), P.([v]); kwargs...)
+    AbstractPlotting.arrows!(P.([p]), P.([v]); kwargs...)
 end
-arrow!(p,v;kwargs...) = arrow!(Makie.AbstractPlotting.current_scene(), p, v; kwargs...)
+arrow!(p,v;kwargs...) = arrow!(AbstractPlotting.current_scene(), p, v; kwargs...)
 
 """
 
@@ -211,15 +189,15 @@ p
 function vectorfieldplot( V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
 
     V′(x) = Point2f0(V(x...)...)
-    Makie.streamplot(V′, xlim[1]..xlim[2], ylim[1]..ylim[2]; kwargs...)
+    AbstractPlotting.streamplot(V′, xlim[1]..xlim[2], ylim[1]..ylim[2]; kwargs...)
 end
-function vectorfieldplot!(scene::Makie.AbstractPlotting.Scene, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
+function vectorfieldplot!(scene::AbstractPlotting.Scene, V; xlim=(-5,5), ylim=(-5,5), n=10, kwargs...)
 
     V′(x) = Point2f0(V(x...)...)
-    Makie.streamplot!(scene, V′, xlim[1]..xlim[2], ylim[1]..ylim[2]; kwargs...)
+    AbstractPlotting.streamplot!(scene, V′, xlim[1]..xlim[2], ylim[1]..ylim[2]; kwargs...)
 end
 vectorfieldplot!(V; kwargs...) =
-    vectorfieldplot!(Makie.AbstractPlotting.current_scene(), V; kwargs...)
+    vectorfieldplot!(AbstractPlotting.current_scene(), V; kwargs...)
 
 ## --------------------------------------------------
 
