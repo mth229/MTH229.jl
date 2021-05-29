@@ -4,7 +4,7 @@
 
 This module does two things:
 
-* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
+* Install other useful packages with one command (`Roots`,  `Zygote`, `QuadGK`, `SpecialFunctions`, ...)
 
 * Add a number of helper functions.
 
@@ -19,7 +19,7 @@ The helper functions include:
   function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
   a, b)` function, from the `Roots` package, should be used.
 
-- `adjoint`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
+- `adjoint`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `Zygote` package.
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
 
@@ -57,7 +57,7 @@ using Reexport
 @reexport using QuadGK
 @reexport using LinearAlgebra
 @reexport using Base.MathConstants
-import ForwardDiff
+@reexport using Zygote
 
 using Requires
 
@@ -75,15 +75,15 @@ export riemann, fubini
 export uvec, xs_ys, unzip, parametric_grid
 
 
-" f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
-Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
-function D(f, n::Int=1)
-    n < 0 && throw(ArgumentError("n must be non-negative"))
-    n == 0 && return f
-    n == 1 && return x -> ForwardDiff.derivative(f, float(x))
-    D(D(f), n-1)
-end
-grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
+# " f'(x) will find the derivative of `f` using Automatic Differentation from the `Zygote` package "
+#Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
+#function D(f, n::Int=1)
+#    n < 0 && throw(ArgumentError("n must be non-negative"))
+#    n == 0 && return f
+#    n == 1 && return x -> ForwardDiff.derivative(f, float(x))
+#    D(D(f), n-1)
+#end
+#grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
 # could aslo wrap as function ForwardDiff.jacobian, ForwardDiff.hessian
 
 
@@ -220,7 +220,7 @@ function bisection(f::Function, a, b)
 end
 
 newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
-newton(f, x0; kwargs...) = newton(f, D(f), x0; kwargs...)
+newton(f, x0; kwargs...) = newton(f, f', x0; kwargs...)
 
 #fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
 #fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)

@@ -4,7 +4,6 @@ license = "MIT"
 version = "0.2.2"
 
 [deps]
-ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -14,13 +13,14 @@ SimplePlots = "307c2aad-90be-4152-b348-f51955fac6ce"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 Roots = "1.0"
 SimplePlots = "0.1, 0.2"
 SymPy = "1.0"
-julia = "1.0"
 ZipFile = "0.9"
+julia = "1.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

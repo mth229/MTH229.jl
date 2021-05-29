@@ -11,7 +11,7 @@ using Test
     @test fzero(sin, 3, 4)  ≈ pi
     @test fzero(sin, 3.0)  ≈ pi
 
-    ## ForwardDiff
+    ## Zygote
     f(x) = sin(x)
     @test f'(2)  ≈ cos(2)
     @test f''(2)  ≈ -sin(2)
