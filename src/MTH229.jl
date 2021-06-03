@@ -379,7 +379,7 @@ end
 # F(a,b) returns true, false, or nothing
 function find_colors(F, xs, colors=(:red, :blue, :black))
     n = length(xs) 
-    cols = repeat([colors[1]], n-1)
+    cols = repeat([colors[1]], n)
     for i in 1:n-1
         a,b = xs[i], xs[i+1]
         val = F(a,b)
@@ -391,6 +391,7 @@ function find_colors(F, xs, colors=(:red, :blue, :black))
             cols[i] = colors[2]
         end
     end
+    cols[end] = cols[end-1]
     cols
 end
 
