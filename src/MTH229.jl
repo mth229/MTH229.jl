@@ -23,6 +23,7 @@ The helper functions include:
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
 
+- `fisheye(f)` returns the composition `atan ∘ f ∘ tan`, which can be useful to find zeros of a function over the entire range of real numbers.
 
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
@@ -67,7 +68,7 @@ function __init__()
 end
 
 ###
-export tangent, secant, D, grad
+export tangent, secant, D, grad, fisheye
 export lim
 export bisection, newton
 export riemann, fubini
@@ -229,6 +230,19 @@ newton(f, x0; kwargs...) = newton(f, f', x0; kwargs...)
 #fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)
 #fzeros(f, a, b; kwargs...) = Roots.find_zeros(f, a, b; kwargs...)
 
+"""
+    fisheye(f)
+
+Transform `f` defined on `(-∞, ∞)` to a new function whose domain is in `(-π/2, π/2)` and range is within `(-π/2, π/2)`. Useful for finding all zeros over the real line. For example
+
+```
+f(x) = 1 + 100x^2 - x^3
+fzeros(f, -100, 100) # empty just misses the zero found with:
+fzeros(fisheye(f), -pi/2, pi/2) .|> tan  # finds 100.19469143521222, not perfect but easy to get
+```
+"""
+fisheye(f) = atan ∘ f ∘ tan
+
 
 
 
@@ -378,7 +392,7 @@ end
 
 # F(a,b) returns true, false, or nothing
 function find_colors(F, xs, colors=(:red, :blue, :black))
-    n = length(xs) 
+    n = length(xs)
     cols = repeat([colors[1]], n)
     for i in 1:n-1
         a,b = xs[i], xs[i+1]
