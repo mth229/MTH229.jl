@@ -89,7 +89,7 @@ function install_projects(dirnm=homedir())
     cd(dirnm)
 
     for f in zarchive.files
-        nm = f.name
+        nm = basename(f.name)
         occursin("ipynb", nm) || continue
         @show :installing, nm
         open(nm, "w") do io
@@ -439,6 +439,11 @@ function find_colors(F, xs, colors=(:red, :blue, :black))
     cols[end] = cols[end-1]
     cols
 end
+
+##
+println("Type the command")
+println("mth229() [enter]")
+println("to begin")
 
 
 end
