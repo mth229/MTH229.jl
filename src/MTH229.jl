@@ -32,8 +32,7 @@ This package provides some plotting routines for `Plots`, `SimplePlots`, and `Ma
 
 The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
 
-run notebook
-run install_packages
+Run `mth229()` to install projects and open notebooks
 ...
 
 """
@@ -64,7 +63,15 @@ using Reexport
 @reexport using ForwardDiff
 
 using IJulia
-export notebook
+
+function mth229(dirnm=homedir())
+    if !isfile(joinpath(dirnm, "01-calculator.ipynb"))
+        @warn "installing projects in $dirnm"
+        install_projects(dirnm)
+    end
+    notebook()
+end
+export mth229
 
 using Requires
 
