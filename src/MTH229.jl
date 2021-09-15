@@ -88,6 +88,7 @@ function install_projects(dirnm=homedir())
     !isdir(dirnm) && mkdir(dirnm)
     cd(dirnm)
 
+    @show zarchive.files
     for f in zarchive.files
         nm = basename(f.name)
         occursin("ipynb", nm) || continue
