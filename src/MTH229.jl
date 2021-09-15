@@ -32,6 +32,10 @@ This package provides some plotting routines for `Plots`, `SimplePlots`, and `Ma
 
 The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
 
+run notebook
+run install_packages
+...
+
 """
 module MTH229
 
@@ -59,12 +63,32 @@ using Reexport
 @reexport using LinearAlgebra
 @reexport using ForwardDiff
 
+using IJulia
+export notebook
+
 using Requires
 
 function __init__()
     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
+end
+
+using ZipFile
+function install_projects(dirnm=homedir())
+    zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
+    zarchive = ZipFile.Reader(download(zf))
+    !isdir(dirnm) && mkdir(dirnm)
+    cd(dirnm)
+
+    for f in zarchive.files
+        nm = f.name
+        occursin("ipynb", nm) || continue
+        @show :installing, nm
+        open(nm, "w") do io
+            write(io, read(f, String))
+        end
+    end
 end
 
 ###
