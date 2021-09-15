@@ -81,7 +81,7 @@ function __init__()
     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
 end
 
-using ZipFile
+import ZipFile
 function install_projects(dirnm=homedir())
     zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
     zarchive = ZipFile.Reader(download(zf))
@@ -91,6 +91,7 @@ function install_projects(dirnm=homedir())
     for f in zarchive.files
         nm = basename(f.name)
         occursin("ipynb", nm) || continue
+        @show nm, f.name
         @show :installing, nm
         open(nm, "w") do io
             write(io, read(f, String))
@@ -441,9 +442,9 @@ function find_colors(F, xs, colors=(:red, :blue, :black))
 end
 
 ##
-println("Type the command")
-println("mth229() [enter]")
-println("to begin")
+@show "Type the command"
+@show "mth229() [enter]"
+@show "to begin"
 
 
 end
