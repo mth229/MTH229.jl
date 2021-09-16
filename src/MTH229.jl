@@ -62,6 +62,11 @@ using Reexport
 
 using IJulia
 
+"""
+    mth229()
+
+Entry point to install projects and start notebook
+"""
 function mth229(dirnm=homedir())
     if !isfile(joinpath(dirnm, "01-calculator.ipynb"))
         @warn "installing projects in $dirnm"
@@ -78,9 +83,7 @@ function __init__()
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
 
-    # banner
-    println("To start the notebook enter the command:")
-    println("julia> mth229() [enter]")
+
 
 
 end
