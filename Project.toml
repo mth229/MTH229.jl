@@ -1,7 +1,7 @@
 name = "MTH229"
 uuid = "ebaf19f5-aa55-568f-9bb2-d6722dad893b"
 license = "MIT"
-version = "0.2.2"
+version = "0.2.3"
 
 [deps]
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
