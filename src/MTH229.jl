@@ -79,6 +79,12 @@ function __init__()
     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
+
+    # banner
+    println("To start the notebook enter the command:")
+    println("julia> mth229() [enter]")
+
+
 end
 
 import ZipFile
@@ -92,8 +98,7 @@ function install_projects(dirnm=homedir())
     for f in zarchive.files
         nm = basename(f.name)
         occursin("ipynb", nm) || continue
-        @show nm, f.name
-        @show :installing, nm
+        @info "installing $nm"
         open(nm, "w") do io
             write(io, read(f, String))
         end
@@ -443,9 +448,6 @@ function find_colors(F, xs, colors=(:red, :blue, :black))
 end
 
 ##
-@show "Type the command"
-@show "mth229() [enter]"
-@show "to begin"
 
 
 end
