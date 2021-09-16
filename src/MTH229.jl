@@ -28,9 +28,7 @@ The helper functions include:
 - `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
 
 
-This package provides some plotting routines for `Plots`, `SimplePlots`, and `Makie`. For the latter two, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
-
-The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
+This package provides some plotting routines for `Plots` and `Makie`. For the latter, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
 
 Run `mth229()` to install projects and open notebooks
 ...
