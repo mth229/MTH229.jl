@@ -59,13 +59,13 @@ using Reexport
 @reexport using LinearAlgebra
 @reexport using ForwardDiff
 
-using Requires
+# using Requires
 
-function __init__()
-    @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
-    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
-    @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
-end
+# function __init__()
+#     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
+#     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
+#     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
+# end
 
 ###
 export tangent, secant, D, grad, fisheye
