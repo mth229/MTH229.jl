@@ -4,7 +4,7 @@
 
 This module does two things:
 
-* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
+* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...) and re-exports their methods.
 
 * Add a number of helper functions.
 
@@ -19,9 +19,11 @@ The helper functions include:
   function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
   a, b)` function, from the `Roots` package, should be used.
 
-- `adjoint`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
+- `'`: As in `f'`. Overloads `adjoint` allowing the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
+
+- `sign_chart(f, a, b)`: shows a *signchart* of `f` by numerically identifying the zero crossings or infinities of `f` over `[a,b]` (assuming `f(a)` and `f(b)` are non zero, then checking the sign between these values. Calling `sign_chart(f', a, b)` is useful for the first-derivative test and `sign_chart(f'', a, b)` for the second-derivative test.
 
 - `fisheye(f)` returns the composition `atan ∘ f ∘ tan`, which can be useful to find zeros of a function over the entire range of real numbers.
 
@@ -29,9 +31,6 @@ The helper functions include:
 
 
 This package provides some plotting routines for `Plots`, `SimplePlots`, and `Makie`. For the latter two, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
-
-The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
-
 """
 module MTH229
 
@@ -59,13 +58,13 @@ using Reexport
 @reexport using LinearAlgebra
 @reexport using ForwardDiff
 
-# using Requires
+using Requires
 
-# function __init__()
-#     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
-#     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
-#     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
-# end
+function __init__()
+     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
+     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
+     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
+ end
 
 ###
 export tangent, secant, D, grad, fisheye
@@ -223,6 +222,8 @@ function bisection(f::Function, a, b)
     M
 end
 
+
+
 newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
 newton(f, x0; kwargs...) = newton(f, f', x0; kwargs...)
 
@@ -244,6 +245,61 @@ fzeros(fisheye(f), -pi/2, pi/2) .|> tan  # finds 100.19469143521222, not perfect
 fisheye(f) = atan ∘ f ∘ tan
 
 
+"""
+   sign_chart(f, a, b; atol=1e-4)
+
+Create a sign chart for `f` over `(a,b)`. Returns a tuple with an identified zero or vertical asymptote and the corresponding sign change. The tolerance is used to disambiguate numerically found values.
+
+# Example
+
+```
+julia> sign_chart(x -> x/(x-1)^2, -5, 5)
+2-element Vector{NamedTuple{(:∞0, :sign_change), Tuple{Float64, String}}}:
+ (∞0 = 0.0, sign_change = "- → +")
+ (∞0 = 1.0000000000000002, sign_change = "+ → +")
+```
+
+"""
+function sign_chart(f, a, b; atol=1e-6)
+    pm(x) = x < 0 ? "-" : x > 0 ? "+" : "0"
+    summarize(f,cp,d) = (DNE_0_∞=cp, sign_change=pm(f(cp-d)) * " → " * pm(f(cp+d)))
+
+    if Roots._is_f_approx_0(f(a),a, eps(), eps()) ||
+        Roots._is_f_approx_0(f(b), b, eps(), eps())
+        return "Sorry, the endpoints must not be zeros for the function"
+    end
+
+    zs = find_zeros(f, a, b)
+    pts = vcat(a, zs, b)
+    for (u,v) ∈ zip(pts[1:end-1], pts[2:end])
+        zs′ = find_zeros(x -> 1/f(x), u, v)
+        for z′ ∈ zs′
+            flag = false
+            for z ∈ zs
+                if isapprox(z′, z, atol=atol)
+                    flag = true
+                    break
+                end
+            end
+            !flag && push!(zs, z′)
+        end
+    end
+
+
+    if isempty(zs)
+	fc = f(a + (b-a)/2)
+	return "No sign change, always " * (fc > 0 ? "positive" : iszero(fc) ? "zero" : "negative")
+    end
+
+    sort!(zs)
+    m,M = extrema(zs)
+    d = min((m-a)/2, (b-M)/2)
+    if length(zs) > 1
+        d′ = minimum(diff(zs))/2
+        d = min(d, d′ )
+    end
+    summarize.(f, zs, d)
+end
 
 
 ##
