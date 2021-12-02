@@ -2,32 +2,32 @@
 
 Helper files for using `Julia` with MTH229.
 
-This is installed with
+This is installed with commands like:
 
 ```noeval
-] add https://github.com/mth229/MTH229.jl
+import Pkg
+Pkg.add("MTH229")
 ```
 
 (This command can be issued at a command line *or* just by itself within an IJulia cell.)
 
-This should also install several other packages we make use of (`Roots`, `SymPy`)
+This should also install several other packages we make use of (`Roots`, `SymPy`) in  MTH 229 at the College of Staten Island.
 
-A plotting package must be installed, among `Plots`, `SimplePlots`, or `Makie`. For example, this command will install `SimplePlots`:
+A plotting package must be installed, among `Plots`, `SimplePlots`, or `Makie`. For example, this command will install `Plots`:
 
 ```noeval
-] add SimplePlots
+Pkg.add("Plots")
 ```
 
-(`SimplePlots` is a stripped-down and faster-to-load version of the `Plots` package.)
-
+----
 
 To use this package we have to load it into a session with the command:
 
 ```
-using MTH229
+using MTH229, Plots
 ```
 
-Optionally, a plotting package can be loaded, such as `SimplePlots` with `using SimplePlots`.
+That also loads a plotting package.
 
 To find out what is in the package read the help page for the package:
 
@@ -38,7 +38,7 @@ To find out what is in the package read the help page for the package:
 
 ## Projects
 
-MTH229 at CSI has several "projects." 
+MTH229 at CSI has several "projects."
 
 These can be accessed online through [binder](https://mybinder.org/v2/gh/mth229/229-projects/master).
 
@@ -62,3 +62,5 @@ for f in zarchive.files
     end
 end
 ```
+
+There are also `Pluto` noteboooks available.

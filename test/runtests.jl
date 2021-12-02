@@ -45,6 +45,15 @@ end
     @test newton(sin, cos, 3.0)  ≈ pi
     @test newton(sin, 3.0)  ≈ pi
 
+    f₁ = x ->  1 + 100x^2 - x^3
+    @test isempty(find_zeros(f₁, -100, 100) )
+    f₁s = find_zeros(fisheye(f₁), -pi/2, pi/2)
+    @test !isempty(f₁s)
+    @test abs(f₁(tan(first(f₁s)))) <= 1e-4
+
+    out = sign_chart(x -> (x-1)*(x-2)/(x-3), 0, 4)
+    @test all([o[1] for o ∈ out] .≈[1,2,3])
+
     @test riemann(sin, 0, pi, 10_000)  ≈ 2
     @test fubini((x,y) -> 1, (x->-sqrt(1-x^2), x->sqrt(1-x^2)), (-1,1)) ≈ pi
 end
@@ -56,6 +65,11 @@ end
     @test unzip(x)[1] == [1, 4]
     @test unzip(x)[2] == [2, 5]
     @test unzip(x)[3] == [3, 6]
+
+    @test length(unzip(x -> x, 0, 1)[1])  <= 50 # 21
+    @test length(unzip(x-> sin(10pi*x), 0, 1)[1]) >= 50 # 233
+    @test length(unzip(x -> x, 0, 1, 10)[1])  == 10
+
 
     @test uvec([2,2]) == 1/sqrt(2) * [1,1]
 

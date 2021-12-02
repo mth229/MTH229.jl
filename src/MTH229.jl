@@ -4,7 +4,7 @@
 
 This module does two things:
 
-* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...)
+* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...) and re-exports their methods.
 
 * Add a number of helper functions.
 
@@ -19,9 +19,11 @@ The helper functions include:
   function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
   a, b)` function, from the `Roots` package, should be used.
 
-- `adjoint`: This allows the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
+- `'`: As in `f'`. Overloads `adjoint` allowing the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
 
 - `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
+
+- `sign_chart(f, a, b)`: shows a *signchart* of `f` by numerically identifying the zero crossings or infinities of `f` over `[a,b]` (assuming `f(a)` and `f(b)` are non zero, then checking the sign between these values. Calling `sign_chart(f', a, b)` is useful for the first-derivative test and `sign_chart(f'', a, b)` for the second-derivative test.
 
 - `fisheye(f)` returns the composition `atan ∘ f ∘ tan`, which can be useful to find zeros of a function over the entire range of real numbers.
 
@@ -29,9 +31,6 @@ The helper functions include:
 
 
 This package provides some plotting routines for `Plots`, `SimplePlots`, and `Makie`. For the latter two, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
-
-The package `SimplePlots` provides  a quick-to-load-plotting  package  with a  syntax  very similar  to the  more  feature   rich  `Plots` package, proving useful with the Binder service.
-
 """
 module MTH229
 
@@ -58,26 +57,38 @@ using Reexport
 @reexport using QuadGK
 @reexport using LinearAlgebra
 @reexport using ForwardDiff
+using PlotUtils
 
-# using Requires
+using Requires
 
-# function __init__()
-#     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
-#     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
-#     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
-# end
+function __init__()
+     @require SimplePlots="307c2aad-90be-4152-b348-f51955fac6ce" include("simpleplots.jl")
+     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" include("plots.jl")
+     @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
+ end
 
 ###
-export tangent, secant, D, grad, fisheye
+export tangent, secant, D, grad, sign_chart, fisheye, rangeclamp
 export lim
 export bisection, newton
 export riemann, fubini
 export uvec, xs_ys, unzip, parametric_grid
 export e
 
+@info "This package defines `e = exp(1)`"
 "e is not Base.MathConstants.ℯ, rather `exp(1)` so that it plays nicely with ForwardDiff"
 e = exp(1)
 
+"""
+    rangeclamp(f, hi=20, lo=-hi)
+
+Replace large values of `f` with `NaN`; useful for plotting with vertical asymptotes.
+"""
+rangeclamp(f, hi=20, lo=-hi; replacement=NaN) = x -> lo < f(x) < hi ? f(x) : replacement
+
+
+# give a warning
+@info "This package overloads the `'` operation for derivatives. This may cause issues with linear algebra usage"
 
  " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
@@ -89,6 +100,64 @@ function D(f, n::Int=1)
 end
 grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
 # could aslo wrap as function ForwardDiff.jacobian, ForwardDiff.hessian
+
+
+"""
+   sign_chart(f, a, b; atol=1e-4)
+
+Create a sign chart for `f` over `(a,b)`. Returns a tuple with an identified zero or vertical asymptote and the corresponding sign change. The tolerance is used to disambiguate numerically found values.
+
+# Example
+
+```
+julia> sign_chart(x -> x/(x-1)^2, -5, 5)
+2-element Vector{NamedTuple{(:∞0, :sign_change), Tuple{Float64, String}}}:
+ (∞0 = 0.0, sign_change = "- → +")
+ (∞0 = 1.0000000000000002, sign_change = "+ → +")
+```
+
+"""
+function sign_chart(f, a, b; atol=1e-6)
+    pm(x) = x < 0 ? "-" : x > 0 ? "+" : "0"
+    summarize(f,cp,d) = (DNE_0_∞=cp, sign_change=pm(f(cp-d)) * " → " * pm(f(cp+d)))
+
+    if Roots._is_f_approx_0(f(a),a, eps(), eps()) ||
+        Roots._is_f_approx_0(f(b), b, eps(), eps())
+        return "Sorry, the endpoints must not be zeros for the function"
+    end
+
+    zs = find_zeros(f, a, b)
+    pts = vcat(a, zs, b)
+    for (u,v) ∈ zip(pts[1:end-1], pts[2:end])
+        zs′ = find_zeros(x -> 1/f(x), u, v)
+        for z′ ∈ zs′
+            flag = false
+            for z ∈ zs
+                if isapprox(z′, z, atol=atol)
+                    flag = true
+                    break
+                end
+            end
+            !flag && push!(zs, z′)
+        end
+    end
+
+
+    if isempty(zs)
+	fc = f(a + (b-a)/2)
+	return "No sign change, always " * (fc > 0 ? "positive" : iszero(fc) ? "zero" : "negative")
+    end
+
+    sort!(zs)
+    m,M = extrema(zs)
+    d = min((m-a)/2, (b-M)/2)
+    if length(zs) > 1
+        d′ = minimum(diff(zs))/2
+        d = min(d, d′ )
+    end
+    summarize.(f, zs, d)
+end
+
 
 
 """
@@ -223,12 +292,10 @@ function bisection(f::Function, a, b)
     M
 end
 
+
+
 newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
 newton(f, x0; kwargs...) = newton(f, f', x0; kwargs...)
-
-#fzero(f, x0; kwargs...) = Roots.find_zero(f, x0; kwargs...)
-#fzero(f, a, b; kwargs...) = Roots.find_zero(f, (a, b); kwargs...)
-#fzeros(f, a, b; kwargs...) = Roots.find_zeros(f, a, b; kwargs...)
 
 """
     fisheye(f)
@@ -240,10 +307,10 @@ f(x) = 1 + 100x^2 - x^3
 fzeros(f, -100, 100) # empty just misses the zero found with:
 fzeros(fisheye(f), -pi/2, pi/2) .|> tan  # finds 100.19469143521222, not perfect but easy to get
 ```
+
+By Gunter Fuchs.
 """
 fisheye(f) = atan ∘ f ∘ tan
-
-
 
 
 ##
@@ -326,6 +393,7 @@ uvec(x) = x / norm(x)
     `unzip(vs)`
     `unzip(v1, v2, ...)`
     `unzip(r::Function, a, b)`
+    `unzip(r::Function, a, b, n)`
 
 Take a vector of points described by vectors (as returned by, say
 `r(t)=[sin(t),cos(t)], r.([1,2,3])`, and return a tuple of collected x
@@ -333,8 +401,9 @@ values, y values, and optionally z values.
 
 If the argument is specified as a comma separated collection of vectors, then these are combined and passed along.
 
-If the argument is a function and two end point, then the function is
-evaluated at 100 points between `a` and `b`.
+If the argument is a function and two end point, then the  points are chosen by `PlotUtils.adaptedgrid`.
+
+If the argument is a function, two endpoints and a number of points, then  `n` points are chosen evenly spaced over `[a,b]`.
 
 This is useful for plotting when the data is more conveniently
 represented in terms of vectors, but the plotting interface requires the x and y values collected.
@@ -359,7 +428,19 @@ Based on `unzip` from the `Plots` package.
 """
 unzip(vs) = Tuple([vs[j][i] for j in eachindex(vs)] for i in eachindex(vs[1]))
 unzip(v,vs...) = unzip([v, vs...])
-unzip(r::Function, a, b, n=100) = unzip(r.(range(a, stop=b, length=n)))
+unzip(r::Function, a, b, n) = unzip(r.(range(a, stop=b, length=n)))
+# return (xs, f.(xs)) or (f₁(xs), f₂(xs), ...)
+function unzip(f::Function, a, b)
+    n = length(f(a))
+    if n == 1
+        return PlotUtils.adapted_grid(f, (a,b))
+    else
+        xsys = [PlotUtils.adapted_grid(x->f(x)[i], (a,b)) for i ∈ 1:n]
+        xs = sort(vcat([xsys[i][1] for i ∈ 1:n]...))
+        return unzip(f.(xs))
+    end
+end
+
 # unzip(a) = map(x -> getfield.(a, x), fieldnames(eltype(a)))
 
 # alternate, should deprecate
