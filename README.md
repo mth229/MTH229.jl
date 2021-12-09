@@ -2,22 +2,28 @@
 
 Helper files for using `Julia` with MTH229.
 
-This is installed with commands like:
+To use package (and a plotting package) issue the command:
+
+```noeval
+using MTH229
+using Plots
+```
+
+
+If using `Julia` version `1.7` or higher, or using `Pluto` as an interface, this package will be installed on demand. The installation may take a bit of time to download the necessary files, but this is only done the first time.
+
+For other uses, the package can be installed with commands like:
 
 ```noeval
 import Pkg
 Pkg.add("MTH229")
+Pkg.add("Plots")
 ```
 
 (This command can be issued at a command line *or* just by itself within an IJulia cell.)
 
-This should also install several other packages we make use of (`Roots`, `SymPy`) in  MTH 229 at the College of Staten Island.
+In addition to `MTH229` and `Plots`, this should also install several other packages we make use of (`Roots`, `SymPy`) in  MTH 229 at the College of Staten Island.
 
-A plotting package must be installed, among `Plots`, `SimplePlots`, or `Makie`. For example, this command will install `Plots`:
-
-```noeval
-Pkg.add("Plots")
-```
 
 ----
 
@@ -63,4 +69,4 @@ for f in zarchive.files
 end
 ```
 
-There are also `Pluto` noteboooks available.
+There are also `Pluto` notebooks available.
