@@ -67,6 +67,41 @@ function __init__()
      @require AbstractPlotting="537997a7-5e4e-5d89-9595-2241ea00577e" include("makie.jl")
  end
 
+
+## start it up
+
+
+"""
+    mth229(dirnm)
+Entry point to install projects and start notebook
+"""
+function mth229(dirnm=homedir())
+    eval(:(using IJulia))
+    eval(:(import ZipFile))
+
+    if !isfile(joinpath(dirnm, "01-calculator.ipynb"))
+        @warn "installing projects in $dirnm"
+        zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
+        zarchive = ZipFile.Reader(download(zf))
+        !isdir(dirnm) && mkdir(dirnm)
+        cd(dirnm)
+
+        @show zarchive.files
+        for f in zarchive.files
+            nm = basename(f.name)
+            occursin("ipynb", nm) || continue
+            @info "installing $nm"
+            open(nm, "w") do io
+                write(io, read(f, String))
+            end
+        end
+    end
+
+    notebook()
+end
+export mth229
+
+
 ###
 export tangent, secant, D, grad, sign_chart, fisheye, rangeclamp
 export lim
