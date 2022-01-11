@@ -97,7 +97,7 @@ function mth229(dirnm=homedir())
         end
     end
 
-    notebook()
+    Base.invokelatest(IJulia.notebook)
 end
 export mth229
 
