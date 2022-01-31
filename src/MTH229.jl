@@ -82,7 +82,7 @@ function mth229(dirnm=homedir())
     if !isfile(joinpath(dirnm, "01-calculator.ipynb"))
         @warn "installing projects in $dirnm"
         zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
-        zarchive = ZipFile.Reader(download(zf))
+        zarchive = Base.invokelatest(ZipFile.Reader,download(zf))
         !isdir(dirnm) && mkdir(dirnm)
         cd(dirnm)
 
@@ -377,8 +377,7 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
   end
 
   xs = a .+ (0:n) * (b-a)/n
-  as = [meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end])]
-  sum(as)
+  sum(meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end]))
 end
 
 #######
