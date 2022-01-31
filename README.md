@@ -1,5 +1,8 @@
 # MTH229
 
+!!! note "Failing currently with newer arm version of Mac OSX"
+    It does work with the rosetta version for Mac OSX
+
 Helper files for using `Julia` with MTH229.
 
 To use package (and a plotting package) issue the command:
