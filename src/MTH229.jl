@@ -178,7 +178,7 @@ function sign_chart(f, a, b; atol=1e-6)
     summarize(f,cp,d) = (DNE_0_∞=cp, sign_change=pm(f(cp-d)) * " → " * pm(f(cp+d)))
 
     # check endpoint
-    if min(abs(f(a)), abs(f(a))) <= max(a*eps(), atol())
+    if min(abs(f(a)), abs(f(b))) <= max(max(a,b)*eps(), atol)
         return "Sorry, the endpoints must not be zeros for the function"
     end
 
