@@ -4,7 +4,7 @@
 
 This module does two things:
 
-* Install other useful packages with one command (`Roots`,  `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...) and re-exports their methods.
+* Install other useful packages with one command (`SymPy`, `Roots`, `ForwardDiff`, `QuadGK`, `SpecialFunctions`, ...) and re-exports their methods.
 
 * Add a number of helper functions.
 
@@ -16,18 +16,39 @@ The helper functions include:
 
 - `bisection(f, a, b)`: A simple implementation of the bisection
   method. The interval ``[a,b]`` should be a bracketing interval. This
-  function makes an illustrative graphic. For real use of the bisection method, the `fzero(f,
-  a, b)` function, from the `Roots` package, should be used.
+  function makes an illustrative graphic. For real use of the
+  bisection method, the `find_zero(f, (a, b))` function, from the `Roots`
+  package, should be used.
 
-- `'`: As in `f'`. Overloads `adjoint` allowing the derivative of   a function to be found as with math notation: `f'`.  The notation can be used for higher-order derivatives too: `f''`, `f'''`, ... This uses automatic differentiation from the `ForwardDiff` package.
+- `'`: As in `f'`. Overloads `adjoint` allowing the derivative of a
+  function to be found as with math notation: `f'`.  The notation can
+  be used for higher-order derivatives too: `f''`, `f'''`, ... This
+  uses automatic differentiation from the `ForwardDiff` package.
 
-- `plotif(f, g, a, b)`: Plot the function `f` over the interval `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By passing in `f` for `g` shows where `f` is positive on `[a,b]`; passing in `f'` shows where `f` is increasing on `[a,b]`; and passing in `f''` shows where `f` is concave up on `[a,b]`.
+- `plotif(f, g, a, b)`: Plot the function `f` over the interval
+  `[a,b]` and color differently where ``g(x) > 0`` over ``[a,b]``. By
+  passing in `f` for `g` shows where `f` is positive on `[a,b]`;
+  passing in `f'` shows where `f` is increasing on `[a,b]`; and
+  passing in `f''` shows where `f` is concave up on `[a,b]`.
 
-- `sign_chart(f, a, b)`: shows a *signchart* of `f` by numerically identifying the zero crossings or infinities of `f` over `[a,b]` (assuming `f(a)` and `f(b)` are non zero, then checking the sign between these values. Calling `sign_chart(f', a, b)` is useful for the first-derivative test and `sign_chart(f'', a, b)` for the second-derivative test.
+- `sign_chart(f, a, b)`: shows a *signchart* of `f` by numerically
+  identifying the zero crossings or infinities of `f` over `[a,b]`
+  (assuming `f(a)` and `f(b)` are non zero, then checking the sign
+  between these values. Calling `sign_chart(f', a, b)` is useful for
+  the first-derivative test and `sign_chart(f'', a, b)` for the
+  second-derivative test.
 
-- `fisheye(f)` returns the composition `atan ∘ f ∘ tan`, which can be useful to find zeros of a function over the entire range of real numbers.
+- `rangeclamp(f, hi=20, lo=hi)`: returns a function `g` with `g(x)`
+  being `NaN` when `f(x)` is outside `[lo, hi]`. Useful for plotting
+  functions with vertical asymptotes.
 
-- `riemann(f, a, b, n; method="right")` An implementation of Riemann sums. The method can be "right" or "left" for Riemann sums, or "trapezoid" or "simpsons" for related approximations.
+- `fisheye(f)` returns the composition `atan ∘ f ∘ tan`, which can be
+  useful to find zeros of a function over the entire range of real
+  numbers.
+
+- `riemann(f, a, b, n; method="right")` An implementation of Riemann
+  sums. The method can be "right" or "left" for Riemann sums, or
+  "trapezoid" or "simpsons" for related approximations.
 
 
 This package provides some plotting routines for `Plots`, `SimplePlots`, and `Makie`. For the latter two, some "recipes" for plotting functions and symbolic directions; and for all some convenience methods.
@@ -123,7 +144,7 @@ rangeclamp(f, hi=20, lo=-hi; replacement=NaN) = x -> lo < f(x) < hi ? f(x) : rep
 
 
 # give a warning
-@info "This package overloads the `'` operation for derivatives. This may cause issues with linear algebra usage"
+@info "This package overloads the `'` operation for derivatives. This may cause issues with linear algebra usage."
 
  " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
@@ -136,8 +157,6 @@ end
 grad(f) = (x, xs...) -> ForwardDiff.gradient(f, vcat(x, xs...))
 # could aslo wrap as function ForwardDiff.jacobian, ForwardDiff.hessian
 
-
-_is_f_approx_0(fa, a, atol, rtol) = abs(fa) <= max(atol, a*rtol)
 
 """
    sign_chart(f, a, b; atol=1e-4)
@@ -158,8 +177,8 @@ function sign_chart(f, a, b; atol=1e-6)
     pm(x) = x < 0 ? "-" : x > 0 ? "+" : "0"
     summarize(f,cp,d) = (DNE_0_∞=cp, sign_change=pm(f(cp-d)) * " → " * pm(f(cp+d)))
 
-    if _is_f_approx_0(f(a),a, eps(), eps()) ||
-        _is_f_approx_0(f(b), b, eps(), eps())
+    # check endpoint
+    if min(abs(f(a)), abs(f(b))) <= max(max(a,b)*eps(), atol)
         return "Sorry, the endpoints must not be zeros for the function"
     end
 
@@ -170,7 +189,7 @@ function sign_chart(f, a, b; atol=1e-6)
         for z′ ∈ zs′
             flag = false
             for z ∈ zs
-                if isapprox(z′, z, atol=atol)
+                if isapprox(z′, z; atol=atol)
                     flag = true
                     break
                 end
@@ -378,8 +397,9 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a .+ (0:n) * (b-a)/n
-  sum(meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end]))
+    xs = range(a, b, length=n+1)
+    lrₛ = zip(Iterators.take(xs, n), Iterators.drop(xs, 1))
+    sum(meth(f, l, r) for (l,r) in lrₛ)
 end
 
 #######
