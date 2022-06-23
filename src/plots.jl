@@ -11,6 +11,8 @@ export newton_vis
    trimplot(f, a, b, c=20; kwargs...)
 
 Plot f over [a,b] but break graph if it exceeds c in absolute value.
+
+See rangeclamp()
 """
 function trimplot(f, a, b, c=20; color=:black, legend=false, kwargs...)
     F = (a,b) -> begin
@@ -32,10 +34,12 @@ end
 
 Plot f colored depending on g >= 0 or not.
 """
-function plotif(f, g, a, b)
+function plotif(f, g, a, b;
+                color = nothing, legend = false,
+                kwargs...)
     xs = range(a, b, length=251)
     cols = identify_colors(g, xs)
-    Plots.plot(xs, f, color=cols, legend=false)
+    Plots.plot(xs, f; color=cols, legend=legend, kwargs...)
 end
 
 
@@ -44,8 +48,8 @@ end
 
 Plot f over a,b with different color when negative.
 """
-function signchart(f, a, b)
-    p = plotif(f, f, a, b)
+function signchart(f, a, b; kwargs...)
+    p = plotif(f, f, a, b; kwargs...)
     Plots.plot!(p, zero)
     p
 end
@@ -135,4 +139,3 @@ function newton_vis(f, x0, a=Inf,b=-Inf; steps=5, kwargs...)
     Plots.scatter!(p, [xs[steps+1]], [0])
     p
 end
-
