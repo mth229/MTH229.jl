@@ -144,7 +144,7 @@ rangeclamp(f, hi=20, lo=-hi; replacement=NaN) = x -> lo < f(x) < hi ? f(x) : rep
 
 
 # give a warning
-@info "This package overloads the `'` operation for derivatives. This may cause issues with linear algebra usage"
+@info "This package overloads the `'` operation for derivatives. This may cause issues with linear algebra usage."
 
  " f'(x) will find the derivative of `f` using Automatic Differentation from the `ForwardDiff` package "
 Base.adjoint(f::Function) = x -> ForwardDiff.derivative(f, float(x))
@@ -397,8 +397,9 @@ function riemann(f::Function, a::Real, b::Real, n::Int; method="right")
      meth = (f,l,r) -> (1/6) * (f(l) + 4*(f((l+r)/2)) + f(r)) * (r-l)
   end
 
-  xs = a .+ (0:n) * (b-a)/n
-  sum(meth(f, l, r) for (l,r) in zip(xs[1:end-1], xs[2:end]))
+    xs = range(a, b, length=n+1)
+    lrₛ = zip(Iterators.take(xs, n), Iterators.drop(xs, 1))
+    sum(meth(f, l, r) for (l,r) in lrₛ)
 end
 
 #######
