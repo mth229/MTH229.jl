@@ -79,6 +79,7 @@ using Reexport
 @reexport using LinearAlgebra
 @reexport using ForwardDiff
 using PlotUtils
+import ZipFile
 
 using Requires
 
@@ -93,17 +94,16 @@ function __init__()
 
 
 """
-    mth229(dirnm)
-Entry point to install projects and start notebook
+    mth229(dirnm=homedir())
+
+Entry point to install projects for MTH229.
 """
 function mth229(dirnm=homedir())
-    eval(:(using IJulia))
-    eval(:(import ZipFile))
-
     if !isfile(joinpath(dirnm, "01-calculator.ipynb"))
         @warn "installing projects in $dirnm"
+
         zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
-        zarchive = Base.invokelatest(ZipFile.Reader,download(zf))
+        zarchive = ZipFile.Reader(download(zf))
         !isdir(dirnm) && mkdir(dirnm)
         cd(dirnm)
 
@@ -117,8 +117,6 @@ function mth229(dirnm=homedir())
             end
         end
     end
-
-    Base.invokelatest(IJulia.notebook)
 end
 export mth229
 
