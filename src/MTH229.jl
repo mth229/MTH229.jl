@@ -430,14 +430,22 @@ hcubature(g, (0,0,0), (3,2,1))  # same. Not order switched
 fubini(f, (0, y->y), (0, x->x), (0,3))
 ```
 """
-fubini(f, dx)     = quadgk(FWrapper(f), dx...)[1]
-fubini(f, ys, xs) = fubini(x -> fubini(y -> f(x,y), endpoints(ys, x)), xs)
-fubini(f, zs, ys, xs) = fubini(x ->
-    fubini(y ->
-        fubini(z -> f(x,y,z),
-            endpoints(zs, (x,y))),
-        endpoints(ys,x)),
-    xs)
+fubini(@nospecialize(f), dx; rtol=missing, kws...) =
+    quadgk(f, dx...; rtol=first(skipmissing((rtol, nothing))), kws...)[1]
+
+fubini(@nospecialize(f), ys, xs; rtol=missing, kws...) =
+    fubini(x -> fubini(y -> f(x,y), endpoints(ys, x); rtol=rtol), xs;
+           rtol = 100*rtol, kws...)
+
+fubini(@nospecialize(f), zs, ys, xs; rtol=missing, kws...) =
+    fubini(x ->
+           fubini(y ->
+                  fubini(z -> f(x,y,z),
+                         endpoints(zs, (x,y));
+                         rtol=100*100*rtol, kws...),
+                  endpoints(ys,x);
+                  rtol = 100rtol),
+           xs; rtol=rtol)
 
 ##################################################
 
