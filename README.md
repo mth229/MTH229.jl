@@ -1,8 +1,16 @@
 # MTH229
 
+[![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb)
+
+
+These can be accessed online through [binder](https://mybinder.org/v2/gh/mth229/229-projects/master).
+
+
 Helper files for using `Julia` with MTH229.
 
-To use package (and a plotting package) issue the command:
+Documentation is available at [mth229.github.io](https://mth229.github.io/).
+
+To use this package (and a plotting package) issue the command:
 
 ```noeval
 using MTH229
@@ -10,43 +18,25 @@ using Plots
 ```
 
 
-If using `Julia` version `1.7` or higher, or using `Pluto` as an interface, this package will be installed on demand. The installation may take a bit of time to download the necessary files, but this is only done the first time.
-
-For other uses, the package can be installed with commands like:
+This package can be installed like other `Julia` packages. For example:
 
 ```noeval
 import Pkg
 Pkg.add("MTH229")
-Pkg.add("Plots")
 ```
 
-(This command can be issued at a command line *or* just by itself within an IJulia cell.)
+This package also installs and re-exports several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH229 at the College of Staten Island.
 
-In addition to `MTH229` and `Plots`, this should also install and re-export several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH 229 at the College of Staten Island.
-
-
-----
-
-To use this package we have to load it into a session with the command:
-
-```
-using MTH229
-using Plots
-```
-
-That also loads a plotting package.
-
+This package does not install a plotting package. The `Plots` package is suggested.
 
 ## Projects
 
-MTH229 at CSI has several "projects."
+MTH229 at CSI has several "projects." There are `ipynb` notebooks to be used from within `IJulia`.
 
-These can be accessed online through [binder](https://mybinder.org/v2/gh/mth229/229-projects/master).
-
-These can be installed locally by copying and pasting then executing the following commands
+These notebooks can be installed locally by copying and pasting then executing the following commands
 
 ```
-using MTH229.ZipFile
+using ZipFile
 zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
 zarchive = ZipFile.Reader(download(zf))
 dirnm = "./229-projects-master"
@@ -63,5 +53,3 @@ for f in zarchive.files
     end
 end
 ```
-
-There are also `Pluto` notebooks available.
