@@ -1,8 +1,5 @@
 # MTH229
 
-!!! note "Failing currently with newer arm version of Mac OSX"
-    It does work with the rosetta version for Mac OSX
-
 Helper files for using `Julia` with MTH229.
 
 To use package (and a plotting package) issue the command:
@@ -25,7 +22,7 @@ Pkg.add("Plots")
 
 (This command can be issued at a command line *or* just by itself within an IJulia cell.)
 
-In addition to `MTH229` and `Plots`, this should also install several other packages we make use of (`Roots`, `SymPy`) in  MTH 229 at the College of Staten Island.
+In addition to `MTH229` and `Plots`, this should also install and re-export several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH 229 at the College of Staten Island.
 
 
 ----
@@ -33,16 +30,11 @@ In addition to `MTH229` and `Plots`, this should also install several other pack
 To use this package we have to load it into a session with the command:
 
 ```
-using MTH229, Plots
+using MTH229
+using Plots
 ```
 
 That also loads a plotting package.
-
-To find out what is in the package read the help page for the package:
-
-```
-?MTH229
-```
 
 
 ## Projects
