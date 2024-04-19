@@ -4,19 +4,18 @@ license = "MIT"
 version = "0.3.0"
 
 [deps]
-"CalculusWithJulia" = "a2e0e22d-7d4c-5312-9169-8b992201a882"
-"QuadGK" = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
-"Reexport" = "189a3867-3050-52da-a836-e630ba90ab69"
-"SymPy"= "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
-
-
+CalculusWithJulia = "a2e0e22d-7d4c-5312-9169-8b992201a882"
+QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
+SimpleExpressions = "deba94f7-f32a-40ad-b45e-be020a5ded2f"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 
 [compat]
-CalculusWithJulia = "0.2"
+CalculusWithJulia = "0.1, 0.2, 0.3"
 QuadGK = "2"
 Reexport = "1"
+SimpleExpressions = "1"
 SymPy = "2"
-
 julia = "1.9"
 
 [extras]

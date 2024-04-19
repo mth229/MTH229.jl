@@ -28,8 +28,26 @@ end
 using Reexport
 @reexport using CalculusWithJulia
 @reexport using QuadGK
+@reexport using SimpleExpressions
 @reexport using SymPy
 
+## fix downstreal
+import CalculusWithJulia: fisheye, fubini
+export fisheye, fubini
+
+uvec(x) = x / norm(x)
+export uvec
+
+
+## simpleexpressions
+import CalculusWithJulia.Roots.CommonSolve: solve
+function solve(ex::SimpleExpressions.SymbolicEquation, x₀, args...; kwargs...)
+    find_zero(ex, x₀, args...; kwargs...)
+end
+function solve(ex::SimpleExpressions.SymbolicEquation, I::Interval; kwargs...)
+    find_zeros(ex, I; kwargs...)
+end
+Base.adjoint(f::SimpleExpressions.AbstractSymbolic) = SimpleExpressions.D(f)
 
 ###
 export bisection, newton
