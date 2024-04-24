@@ -37,7 +37,7 @@ These notebooks can be installed locally by copying and pasting then executing t
 
 ```
 using ZipFile
-zf = "https://www.github.com/mth229/229-projects/archive/master.zip"
+zf = "https://www.github.com/mth229/229-projects/archive/main.zip"
 zarchive = ZipFile.Reader(download(zf))
 dirnm = "./229-projects-master"
 isdir(dirnm) && error("Directory $dirnm already exists")
