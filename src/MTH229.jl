@@ -34,9 +34,6 @@ using Reexport
 
 ## simpleexpressions
 import CalculusWithJulia.Roots.CommonSolve: solve
-function solve(ex::SimpleExpressions.SymbolicEquation, x₀, args...; kwargs...)
-    find_zero(ex, x₀, args...; kwargs...)
-end
 function solve(ex::SimpleExpressions.SymbolicEquation, I::Interval; kwargs...)
     find_zeros(ex, I; kwargs...)
 end
