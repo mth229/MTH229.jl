@@ -27,7 +27,7 @@ Pkg.add("MTH229")
 
 This package also installs and re-exports several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH229 at the College of Staten Island.
 
-This package does not install a plotting package. The `Plots` package is suggested. Here are some commands to ensure the interaction `plotly` backend is available:
+This package does not install a plotting package. The `Plots` package is suggested. Here are some commands to ensure the interactive `plotly` backend is available:
 
 ```noeval
 Pkg.add("Plots")
@@ -73,4 +73,39 @@ for f in zarchive.files
         write(io, read(f, String))
     end
 end
+```
+
+## Running remotely
+
+To run the `MTH229` package remotely, we have three options:
+
+* If registered in a class, we have been provided a service we call `JuliaBox`
+
+* You can run freely through the resource-limited binder: [![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb)
+
+* [Google colab](https://colab.research.google.com/) offers a free service. To run this, you need to execute a command that downloads `Julia` and installs this package and a plotting package:
+
+```
+# Installation cell
+%%capture
+%%shell
+if ! command -v julia 3>&1 > /dev/null
+then
+    wget -q 'https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.2-linux-x86_64.tar.gz' \
+        -O /tmp/julia.tar.gz
+    tar -x -f /tmp/julia.tar.gz -C /usr/local --strip-components 1
+    rm /tmp/julia.tar.gz
+fi
+julia -e 'using Pkg; pkg"add IJulia MTH229; precompile;"'
+julia -e 'using Pkg; Pkg.add(url="https://github.com/mth229/BinderPlots.jl")'
+echo 'Now change the runtime type'
+```
+
+After this executes (which can take quite some time, as in a few minutes) under the `Runtime` menu select `Change runtime type` and then select `Julia`.
+
+After that, in a cell execute the commands to set up this package and a plotting package:
+
+```
+using MTH229
+using BinderPlots
 ```
