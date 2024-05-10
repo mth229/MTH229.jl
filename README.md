@@ -3,22 +3,35 @@
 [![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb)
 
 
-These can be accessed online through [binder](https://mybinder.org/v2/gh/mth229/229-projects/master).
-
-
 Helper files for using `Julia` with MTH229.
+
+This package and the accompanying projects can be accessed online through [binder](https://mybinder.org/v2/gh/mth229/229-projects/master).
+
 
 Documentation is available at [mth229.github.io](https://mth229.github.io/).
 
-To use this package (and a plotting package) issue the command:
+----
+
+To use this package (and a plotting package) with `Julia` issue the command:
 
 ```noeval
 using MTH229
 using Plots
+plotly()
 ```
 
+----
 
-This package can be installed like other `Julia` packages. For example:
+To install `Julia` you can use [Juliaup](https://github.com/JuliaLang/juliaup). For windows, try:
+
+> `winget install julia -s msstore`
+
+For other operating systems this command can be run at the shell:
+
+> `curl -fsSL https://install.julialang.org | sh`
+
+
+The `MTH229` package can be installed like other `Julia` packages. For example:
 
 ```noeval
 import Pkg
@@ -26,6 +39,8 @@ Pkg.add("MTH229")
 ```
 
 This package also installs and re-exports several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH229 at the College of Staten Island.
+
+----
 
 This package does not install a plotting package. The `Plots` package is suggested. Here are some commands to ensure the interactive `plotly` backend is available:
 
@@ -35,7 +50,16 @@ Pkg.add("PlotlyBase")
 Pkg.add("PlotlyKaleido")
 ```
 
-In class, this package is used within a notebook environment, as installed and opened with:
+In class, this package is used within a notebook environment, started with:
+
+```noeval
+using IJulia
+notebook()
+```
+
+The notebook opens in the home directory. This behavior can be modified by passing a value to the `dir` argument.
+
+If `IJulia` is not installed, it can be done with these commands:
 
 ```noeval
 Pkg.add("PyCall")
@@ -45,13 +69,11 @@ Pkg.add("Conda")
 using Conda
 Conda.add("notebook=6.5.6") ## this is a workaround with Windows
 Pkg.build("IJulia")
-using IJulia
-notebook()
 ```
 
 ## Projects
 
-MTH229 at CSI has several "projects." There are `ipynb` notebooks to be used from within `IJulia`.
+MTH229 at CSI has several "projects." There are accompanying `ipynb` notebooks to be used from within `IJulia`.
 
 These notebooks can be installed locally by copying and pasting then executing the following commands
 
@@ -77,13 +99,13 @@ end
 
 ## Running remotely
 
-To run the `MTH229` package remotely, we have three options:
+Here are three options to run the `MTH229` package on a remote `Julia` installation:
 
-* If registered in a class, we have been provided a service we call `JuliaBox`
+* If you are registered in a class at CSI, we have been providing a service we call `JuliaBox`.
 
 * You can run freely through the resource-limited binder: [![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb)
 
-* [Google colab](https://colab.research.google.com/) offers a free service. To run this, you need to execute a command that downloads `Julia` and installs this package and a plotting package:
+* [Google colab](https://colab.research.google.com/) offers a free service. To use thi package with `colab`, you need to execute a block of commands that downloads `Julia` and installs this package and a plotting package:
 
 ```
 # Installation cell
@@ -97,7 +119,7 @@ then
     rm /tmp/julia.tar.gz
 fi
 julia -e 'using Pkg; pkg"add IJulia MTH229; precompile;"'
-julia -e 'using Pkg; Pkg.add(url="https://github.com/mth229/BinderPlots.jl")'
+julia -e 'using Pkg; Pkg.add(url="https://github.com/mth229/BinderPlots.jl")' # lighter weight alternative to `Plots+plotly()`
 echo 'Now change the runtime type'
 ```
 
