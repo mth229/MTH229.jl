@@ -27,7 +27,27 @@ Pkg.add("MTH229")
 
 This package also installs and re-exports several other packages we make use of (`Roots`, `SymPy`, etc/) in  MTH229 at the College of Staten Island.
 
-This package does not install a plotting package. The `Plots` package is suggested.
+This package does not install a plotting package. The `Plots` package is suggested. Here are some commands to ensure the interaction `plotly` backend is available:
+
+```noeval
+Pkg.add("Plots")
+Pkg.add("PlotlyBase")
+Pkg.add("PlotlyKaleido")
+```
+
+In class, this package is used within a notebook environment, as installed and opened with:
+
+```noeval
+Pkg.add("PyCall")
+Pkg.add("IJulia")
+Pkg.add("Conda")
+
+using Conda
+Conda.add("notebook=6.5.6") ## this is a workaround with Windows
+Pkg.build("IJulia")
+using IJulia
+notebook()
+```
 
 ## Projects
 
@@ -36,6 +56,7 @@ MTH229 at CSI has several "projects." There are `ipynb` notebooks to be used fro
 These notebooks can be installed locally by copying and pasting then executing the following commands
 
 ```
+Pkg.add("ZipFile")
 using ZipFile
 zf = "https://www.github.com/mth229/229-projects/archive/main.zip"
 zarchive = ZipFile.Reader(download(zf))
