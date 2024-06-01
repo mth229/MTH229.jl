@@ -1,8 +1,8 @@
 # MTH229
 
-[![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb)
+[![Run on Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mth229/229-projects/lite?labpath=blank-notebook.ipynb) Run on binder (with SymPy)
 
-[![Run on Binder w/o SymPy](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jverzani/MTH229Lite.jl/main?labpath=blank-notebook.ipynb)
+[![Run on Binder w/o SymPy](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jverzani/MTH229Lite.jl/main?labpath=blank-notebook.ipynb) Run on binder (without SymPy)
 
 
 
