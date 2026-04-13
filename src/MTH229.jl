@@ -126,7 +126,12 @@ end
 
 
 
-newton(f, fp, x0; kwargs...) = Roots.find_zero((f,fp), x0, Roots.Newton(); kwargs...)
+function newton(f, fp, x0; verbose=false, kwargs...)
+    tracks = verbose ? Roots.Tracks() : Roots.NullTracks()
+    α = Roots.find_zero((f,fp), x0, Roots.Newton(); tracks, kwargs...)
+    verbose && display(tracks)
+    α
+end
 newton(f, x0; kwargs...) = newton(f, f', x0; kwargs...)
 
 
