@@ -29,7 +29,7 @@ using Reexport
 @reexport using CalculusWithJulia
 @reexport using QuadGK
 @reexport using SimpleExpressions
-@reexport using SymPy
+@reexport using SymPyPythonCall
 
 
 ## simpleexpressions
