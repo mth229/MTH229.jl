@@ -125,7 +125,11 @@ function bisection(f::Function, a, b)
 end
 
 
+"""
+    newton(f, [fp], x0; verbose=false, kwargs...)
 
+Run Newton's method to find a zero of `f` near `x0`.
+"""
 function newton(f, fp, x0; verbose=false, kwargs...)
     tracks = verbose ? Roots.Tracks() : Roots.NullTracks()
     α = Roots.find_zero((f,fp), x0, Roots.Newton(); tracks, kwargs...)
